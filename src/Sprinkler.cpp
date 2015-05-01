@@ -37,8 +37,8 @@ bool Sprinkler::on( int8_t zone_id, unsigned int duration_in_mins ) {
     if( ! zone->queued ) enqueue( zone );
 
     zone->duration = duration_in_mins * 60L * 1000L; // stored in milliseconds
-    // fprintf( stderr, "# duration = %d mins = %lu millis\n", duration_in_mins,
-    //          zone->duration );
+    fprintf( stderr, "# duration = %d mins = %lu millis\n", duration_in_mins,
+             zone->duration );
 
     return true;
 }
@@ -71,7 +71,7 @@ void Sprinkler::allOn( unsigned int *durations_in_mins, unsigned int size ) {
     assert( size >= 0 && size < MAX_ZONES );
 
     for( uint8_t i = 0; i < size; i++ ) {
-        // fprintf( stderr, "# allOn calling on( %d, %d )\n", i, durations_in_mins[i] );
+        fprintf( stderr, "# allOn calling on( %d, %d )\n", i, durations_in_mins[i] );
         on( i, durations_in_mins[i] );
     }
 }
@@ -90,15 +90,15 @@ void Sprinkler::advance( void ) {
 //     unsigned int size;
 //     size = log( num );
 //
-//     // fprintf( stderr, "# %d size is %d\n", num, size );
+//     fprintf( stderr, "# %d size is %d\n", num, size );
 //
 //     str[ size-- ] = '\0';
-//     // fprintf( stderr, "# str: %s\n", str );
+//     fprintf( stderr, "# str: %s\n", str );
 //
 //     do {
 //         str[ size ] = int( num % 10 ) + char('0');
 //         num = int( num / 10 );
-//         // fprintf( stderr, "# str: %s\n", str );
+//         fprintf( stderr, "# str: %s\n", str );
 //     } while( size-- );
 // }
 
@@ -137,8 +137,8 @@ Zone* Sprinkler::dequeue() {
         _queue_head = head->next;
         if( _queue_head != NULL ) _queue_head->prior = NULL;
 
-        // fprintf( stderr, "# dequeue: now head is %d\n",
-        //          _queue_head == NULL ? -1 : _queue_head->zone );
+        fprintf( stderr, "# dequeue: now head is %d\n",
+                 _queue_head == NULL ? -1 : _queue_head->zone );
     }
 
     return head;
@@ -165,8 +165,8 @@ bool Sprinkler::update( unsigned long now ) {
         zone->start_time = now;
     } else { // Stop if the time is up
 
-        // fprintf( stderr, "# %lu - %lu = %lu  >= %lu\n", now, zone->start_time,
-        //          ( now - zone->start_time ), zone->duration );
+        fprintf( stderr, "# %lu - %lu = %lu  >= %lu\n", now, zone->start_time,
+                 ( now - zone->start_time ), zone->duration );
 
         // Wrappinig of millis/now is ok. See: http://www.gammon.com.au/millis
         if( now - zone->start_time >= zone->duration  ) {
@@ -181,14 +181,14 @@ bool Sprinkler::update( unsigned long now ) {
 }
 
 void Sprinkler::startFlow( uint8_t zone_id ) {
-    // fprintf( stderr, "# startFlow: %d\n", zone_id );
+    fprintf( stderr, "# startFlow: %d\n", zone_id );
     // Serial.print( "startFlow" );
     // Serial.println( _first_pin + zone_id );
     digitalWrite( _first_pin + zone_id, ZONE_ON );
 }
 
 void Sprinkler::stopFlow( uint8_t zone_id ) {
-    // fprintf( stderr, "# stopFlow: %d\n", zone_id );
+    fprintf( stderr, "# stopFlow: %d\n", zone_id );
     // Serial.print( "stopFlow" );
     // Serial.println( _first_pin + zone_id );
     digitalWrite( _first_pin + zone_id, ZONE_OFF );
