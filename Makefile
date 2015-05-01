@@ -1,25 +1,37 @@
-# Your Arduino environment.
-AVR_HOME = $(ARD_HOME)/hardware/tools/avr
-ARD_BIN = $(AVR_HOME)/bin
-AVRDUDE = $(ARD_BIN)/avrdude
-AVRDUDE_CONF = $(AVR_HOME)/etc/avrdude.conf
+SOURCES = t/test-sprinkler.cpp \
+					src/Sprinkler.cpp \
+					lib/ArduinoTap/*.cpp \
+					lib/Timer/*.cpp \
+					lib/MockWProgram/MockWProgram.cpp \
+					lib/MockWProgram/MockSerial.cpp
 
-# Your favorite serial monitor.
-MON_CMD = screen
-MON_SPEED = 9600
+OBJECTS := $(addsuffix .o, $(addprefix .build/, $(basename $(SOURCES))))
+DEPFILES := $(subst .o,.dep, $(subst .build/,.deps/, $(OBJECTS)))
+TESTCPPFLAGS = -D_TEST_ -It -Iarduino -Isrc -Ilib  
+		# -I/Applications/Arduino.app/Contents/Resources/Java/hardware/arduino/avr/cores/arduino/
+		# -I/Applications/Arduino.app/Contents/Resources/Java/hardware/tools/avr/avr/include \
+		# --sysroot=/tmp -isystem=/tmp
+		# -I/Applications/Arduino.app/Contents/Resources/Java/hardware/tools/avr/avr/include \
+		# -I/Applications/Arduino.app/Contents/Resources/Java/hardware/arduino/avr/cores/arduino/
+CPPDEPFLAGS = -MMD -MP -MF .deps/$(basename $<).dep
+RUNTEST := $(if $(COMSPEC), runtest.exe, runtest)
+# CPPC = /opt/local/bin/c++-mp-4.7 -c
+# CPPC = /opt/local/bin/g++-mp-4.7 -c
+# CPPC = /usr/bin/c++ -c
+# $(COMPILE.cpp) $(TESTCPPFLAGS) $(CPPDEPFLAGS) -o $@ $<
 
-# Board settings.
-BOARD = uno
-VARIANT = uno
-PORT = /dev/tty.usbmodem6221
-# PROGRAMMER = stk500v2
-PROGRAMMER = arduino
-# PROGRAMMER = avrispmkii
+all: runtests
 
-# Where to find header files and libraries.
-INC_DIRS = ./inc
-LIB_DIRS = $(addprefix $(ARD_HOME)/libraries/, $(LIBS))
-LIBS =
+.build/%.o: %.cpp
+	mkdir -p .deps/$(dir $<)
+	mkdir -p .build/$(dir $<)
+	$(COMPILE.cpp) $(TESTCPPFLAGS) $(CPPDEPFLAGS) -o $@ $<
+	# $(CPPC) $(TESTCPPFLAGS) $(CPPDEPFLAGS) -o $@ $<
 
-include ../Makefile.master
+runtests: $(OBJECTS)
+	$(CC) $(OBJECTS) -lstdc++ -o $@
 
+clean:
+	@rm -rf .deps/ .build/ $(RUNTEST)
+
+-include $(DEPFILES)
