@@ -67,6 +67,7 @@ class Sprinkler {
     void allOff( void );
     void advance( void );
     void status( char *str );
+    void dump( void );
 
     bool update( void );
     bool update( unsigned long now );
@@ -80,7 +81,7 @@ class Sprinkler {
     Zone *_queue_tail;
 
     void enqueue( Zone * );
-    Zone *dequeue();
+    void dequeue( Zone * );
 
     void startFlow( uint8_t zone_id );
     void stopFlow( uint8_t zone_id );
