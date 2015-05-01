@@ -89,9 +89,16 @@ void Sprinkler::advance( void ) {
 }
 
 #ifdef _TEST_
+// KLUDGE: This is available under Arduino, but not during testing.
+// This is not a good implementation.
 void itoa( unsigned int num, char *str, int radix ) {
+    assert( num < 1001 );
+    assert( radix == 10 );
+
     unsigned int size;
-    size = ( num == 0  ? 0 : log( num ) / log( radix ) ) + 1;
+    // math.h produces an error in the definition of round, can't use log()
+    // size = ( num == 0  ? 0 : log( num ) / log( radix ) ) + 1;
+    size = num < 10 ? 1 : num < 100 ? 2 : 3; // we know it won't be this big
     // fprintf( stderr, "# %d size is %d\n", num, size );
 
     str[ size-- ] = '\0';

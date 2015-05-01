@@ -33,7 +33,9 @@
 #include "MockWProgram/MockWProgram.hpp"
 #include <stdio.h>
 #include <string.h>
-#include <math.h>
+// math.h produces an error in the definition of round
+// would like to use to get def'n of log
+// #include <math.h>
 #else
 // # TODO: if version > 100?
 #include "Arduino.h"
