@@ -27,16 +27,15 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <assert.h>
-// #include <math.h>
-// #include <WString.h>
 
 #ifdef _TEST_
-#include "MockWProgram/MockWProgram.hpp"
 #define __ASSERT_USE_STDERR
+#include "MockWProgram/MockWProgram.hpp"
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 #else
-// If version > 100?
+// # TODO: if version > 100?
 #include "Arduino.h"
 #endif
 
@@ -86,10 +85,3 @@ class Sprinkler {
 };
 
 #endif
-
-
-
-
-
-
-

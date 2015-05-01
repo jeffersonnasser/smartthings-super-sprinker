@@ -6,7 +6,7 @@ Sprinkler::Sprinkler( uint8_t first_pin, uint8_t zone_count ) {
     _first_pin = first_pin;
     _zone_count = zone_count;
 
-    for( uint8_t i = 0; i < _zone_count; i++ ){
+    for( uint8_t i = 0; i < _zone_count; i++ ) {
         pinMode( _first_pin + i, OUTPUT );
         digitalWrite( _first_pin + i, ZONE_OFF );
     }
@@ -55,8 +55,10 @@ bool Sprinkler::off( int8_t zone_id ) {
     if( zone->on ) { // On, must be head of queue
         assert( _queue_head == zone );
         stopFlow( zone->zone );
+        zone->on = false;
     }
 
+    // TODO: combine this and dequeue
     // Remove from the queue
     zone->queued = false;
     if( zone->prior != NULL ) zone->prior->next = zone->next;
@@ -86,21 +88,20 @@ void Sprinkler::advance( void ) {
     if( _queue_head != NULL ) off( _queue_head->zone );
 }
 
-// void itoa( unsigned int num, char *str ){
-//     unsigned int size;
-//     size = log( num );
-//
-//     fprintf( stderr, "# %d size is %d\n", num, size );
-//
-//     str[ size-- ] = '\0';
-//     fprintf( stderr, "# str: %s\n", str );
-//
-//     do {
-//         str[ size ] = int( num % 10 ) + char('0');
-//         num = int( num / 10 );
-//         fprintf( stderr, "# str: %s\n", str );
-//     } while( size-- );
-// }
+#ifdef _TEST_
+void itoa( unsigned int num, char *str, int radix ) {
+    unsigned int size;
+    size = ( num == 0  ? 0 : log( num ) / log( radix ) ) + 1;
+    // fprintf( stderr, "# %d size is %d\n", num, size );
+
+    str[ size-- ] = '\0';
+    do {
+        str[ size ] = int( num % radix ) + char( '0' );
+        num = int( num / radix );
+        // fprintf( stderr, "# str: %s\n", str );
+    } while( size-- );
+}
+#endif
 
 // status should start with ok
 void Sprinkler::status( char *status ) {
@@ -109,11 +110,11 @@ void Sprinkler::status( char *status ) {
     strcat( status, "ok" );
     for( uint8_t i = 0; i < _zone_count; i++ ) {
         zone = &_zones[i];
-        if( zone->on ) strcat(status, ",on" );
-        else if( zone->queued ) strcat(status,",queued");
-        else strcat(status,",off");
+        if( zone->on ) strcat( status, ",on" );
+        else if( zone->queued ) strcat( status, ",queued" );
+        else strcat( status, ",off" );
 
-        // itoa( i, &status[ strlen( status ) ] );
+        itoa( i, &status[ strlen( status ) ], 10 );
     }
 }
 
@@ -193,7 +194,3 @@ void Sprinkler::stopFlow( uint8_t zone_id ) {
     // Serial.println( _first_pin + zone_id );
     digitalWrite( _first_pin + zone_id, ZONE_OFF );
 }
-
-
-
-

@@ -87,8 +87,9 @@ void loop() {
 
     // TODO: documents how to size
     char status[128] = "";
-    sprinkler.status(status);
-    is( status, "ok,off0,off1,off2,off3,off4,off5,off6,off7", "Status correct");
+    sprinkler.status( status );
+    ok( !strcmp( status, "ok,off0,off1,off2,off3,off4,off5,off6,off7" ),
+        "Status correct" );
 
     // ok( sprinkler.pump(1), "Do stuff with pump");
 
