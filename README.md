@@ -50,3 +50,11 @@ effectively hide the local files, but we don't have any way to create output.
 ## Not Implemented
 
     * Pump function
+
+
+## Resources:
+
+* Assert while on Arduino:
+    https://gist.github.com/jlesech/3089916
+
+http://stackoverflow.com/questions/780819/how-can-i-unit-test-arduino-code
