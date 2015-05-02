@@ -41,9 +41,10 @@
 #include "Arduino.h"
 #endif
 
-#define MAX_ZONES  24
-#define ZONE_ON    LOW
-#define ZONE_OFF   HIGH
+#define MAX_ZONES    24
+#define MAX_DURATION 60
+#define ZONE_ON      LOW
+#define ZONE_OFF     HIGH
 
 typedef struct Zone {
     uint8_t zone;
@@ -54,6 +55,14 @@ typedef struct Zone {
     Zone *prior;
     Zone *next;
 } Zone;
+
+typedef struct ZoneStatus {
+    uint8_t zone;
+    bool    queued;
+    bool    on;
+    unsigned long duration;
+    unsigned long time_left;
+} ZoneStatus;
 
 class Sprinkler {
 
@@ -66,7 +75,7 @@ class Sprinkler {
     void allOn( unsigned int *durations_in_mins, unsigned int size );
     void allOff( void );
     void advance( void );
-    void status( char *str );
+    bool status( unsigned int zone_id, ZoneStatus *status );
     void dump( void );
 
     bool update( void );

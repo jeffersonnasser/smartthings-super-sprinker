@@ -27,6 +27,7 @@ Sprinkler::Sprinkler( uint8_t first_pin, uint8_t zone_count ) {
 // If zone is already queued or on, this will update the duration
 bool Sprinkler::on( int8_t zone_id, unsigned int duration_in_mins ) {
     if( zone_id < 0 || zone_id > MAX_ZONES ) return false;
+    if( ! duration_in_mins > 0 ) return false;
 
     Zone *zone = &_zones[zone_id];
 
@@ -34,6 +35,7 @@ bool Sprinkler::on( int8_t zone_id, unsigned int duration_in_mins ) {
     // Otherwise add to the end of the queue.
     if( ! zone->queued ) enqueue( zone );
 
+    if( duration_in_mins > MAX_DURATION ) duration_in_mins = MAX_DURATION;
     zone->duration = duration_in_mins * 60L * 1000L; // stored in milliseconds
     // fprintf( stderr, "# duration = %d mins = %lu millis\n", duration_in_mins,
     //          zone->duration );
@@ -98,18 +100,22 @@ void itoa( unsigned int num, char *str, int radix ) {
 #endif
 
 // status should start with ok
-void Sprinkler::status( char *status ) {
-    Zone *zone;
+bool Sprinkler::status( unsigned int zone_id, ZoneStatus *status ) {
+    if( zone_id < 0 || zone_id >= _zone_count ) return false;
 
-    strcpy( status, "ok" );
-    for( uint8_t i = 0; i < _zone_count; i++ ) {
-        zone = &_zones[i];
-        if( zone->on ) strcat( status, ",on" );
-        else if( zone->queued ) strcat( status, ",queued" );
-        else strcat( status, ",off" );
+    unsigned long now = millis();
 
-        itoa( i, &status[ strlen( status ) ], 10 );
-    }
+    Zone *zone = &_zones[zone_id];
+    status->zone = zone->zone;
+    status->on = zone->on;
+    status->queued = zone->queued;
+    status->duration = zone->duration;
+    status->time_left = zone->on
+                        ?  (  ( zone->duration - ( now - zone->start_time ) )
+                              / ( 1000L * 60L ) )
+                        : 0;
+
+    return true;
 }
 
 void Sprinkler::dump( void ) {
@@ -167,9 +173,7 @@ void Sprinkler::dequeue( Zone *zone ) {
 }
 
 bool Sprinkler::update( void ) {
-    unsigned long now;
-    now = millis();
-
+    unsigned long now = millis();
     return update( now );
 }
 
@@ -214,5 +218,3 @@ void Sprinkler::stopFlow( uint8_t zone_id ) {
     // Serial.println( _first_pin + zone_id );
     digitalWrite( _first_pin + zone_id, ZONE_OFF );
 }
-
-
