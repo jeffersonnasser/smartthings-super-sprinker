@@ -23,7 +23,7 @@ Sprinkler::Sprinkler( uint8_t first_pin, uint8_t zone_count ) {
     _queue_head = NULL;
     _queue_tail = NULL;
 
-    for( uint8_t i = 0; i < MAX_ZONES; i++ ) {
+    for( uint8_t i = 0; i < SPRINKLER_MAX_ZONES; i++ ) {
         _zones[i].zone = i;
         _zones[i].on = false;
         _zones[i].queued = false;
@@ -34,8 +34,8 @@ Sprinkler::Sprinkler( uint8_t first_pin, uint8_t zone_count ) {
 }
 
 // If zone is already queued or on, this will update the duration
-bool Sprinkler::on( uint8_t zone_id, unsigned int duration_in_mins ) {
-    if( zone_id < 0 || zone_id > MAX_ZONES ) return false;
+bool Sprinkler::on( uint8_t zone_id, uint8_t duration_in_mins ) {
+    if( zone_id < 0 || zone_id > _zone_count ) return false;
     if( ! ( duration_in_mins > 0 ) ) return false;
 
     Zone *zone = &_zones[zone_id];
@@ -44,7 +44,9 @@ bool Sprinkler::on( uint8_t zone_id, unsigned int duration_in_mins ) {
     // Otherwise add to the end of the queue.
     if( ! zone->queued ) enqueue( zone );
 
-    if( duration_in_mins > MAX_DURATION ) duration_in_mins = MAX_DURATION;
+    if( duration_in_mins > SPRINKLER_MAX_DURATION )
+        duration_in_mins = SPRINKLER_MAX_DURATION;
+
     zone->duration = duration_in_mins * 60L * 1000L; // stored in milliseconds
     // fprintf( stderr, "# duration = %d mins = %lu millis\n", duration_in_mins,
     //          zone->duration );
@@ -53,7 +55,7 @@ bool Sprinkler::on( uint8_t zone_id, unsigned int duration_in_mins ) {
 }
 
 bool Sprinkler::off( uint8_t zone_id ) {
-    if( zone_id < 0 || zone_id > MAX_ZONES )
+    if( zone_id < 0 || zone_id > _zone_count )
         return false;
 
     Zone *zone = &_zones[zone_id];
@@ -71,8 +73,8 @@ bool Sprinkler::off( uint8_t zone_id ) {
     return true;
 }
 
-void Sprinkler::allOn( unsigned int *durations_in_mins, unsigned int size ) {
-    assert( size >= 0 && size < MAX_ZONES );
+void Sprinkler::allOn( uint8_t *durations_in_mins, uint8_t size ) {
+    assert( size >= 0 && size < _zone_count );
     for( uint8_t i = 0; i < size; i++ ) on( i, durations_in_mins[i] );
 }
 
@@ -229,4 +231,3 @@ void Sprinkler::stopFlow( uint8_t zone_id ) {
     // Serial.println(  _first_pin + zone_id );
     digitalWrite( _first_pin + zone_id, ZONE_OFF );
 }
-

@@ -42,11 +42,12 @@
 #else
 #include "WProgram.h"
 #endif
-// #include <Stream.h>
+// Compile out the print statements to save mem
+#define fprintf(...)   true
 #endif
 
-#define MAX_ZONES    24
-#define MAX_DURATION 60
+#define SPRINKLER_MAX_ZONES    24
+#define SPRINKLER_MAX_DURATION 60
 #define ZONE_ON      LOW
 #define ZONE_OFF     HIGH
 
@@ -73,10 +74,10 @@ class Sprinkler {
   public:
     Sprinkler( uint8_t first_pin, uint8_t zone_count );
 
-    bool on( uint8_t zone_id, unsigned int duration_in_mins );
+    bool on( uint8_t zone_id, uint8_t duration_in_mins );
     bool off( uint8_t zone_id );
     // bool pump( uint8_t zone_id );
-    void allOn( unsigned int *durations_in_mins, unsigned int size );
+    void allOn( uint8_t *durations_in_mins, uint8_t size );
     void allOff( void );
     void advance( void );
     bool status( uint8_t zone_id, ZoneStatus *status );
@@ -89,7 +90,7 @@ class Sprinkler {
     uint8_t _first_pin;
     uint8_t _zone_count;
 
-    Zone _zones[MAX_ZONES];
+    Zone _zones[SPRINKLER_MAX_ZONES];
     Zone *_queue_head;
     Zone *_queue_tail;
 
