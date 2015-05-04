@@ -37,8 +37,12 @@
 // would like to use to get def'n of log
 // #include <math.h>
 #else
-// # TODO: if version > 100?
+#if ARDUINO >= 100
 #include "Arduino.h"
+#else
+#include "WProgram.h"
+#endif
+// #include <Stream.h>
 #endif
 
 #define MAX_ZONES    24
@@ -69,9 +73,9 @@ class Sprinkler {
   public:
     Sprinkler( uint8_t first_pin, uint8_t zone_count );
 
-    bool on( int8_t zone_id, unsigned int duration_in_mins );
-    bool off( int8_t zone_id );
-    // bool pump( int8_t zone_id );
+    bool on( uint8_t zone_id, unsigned int duration_in_mins );
+    bool off( uint8_t zone_id );
+    // bool pump( uint8_t zone_id );
     void allOn( unsigned int *durations_in_mins, unsigned int size );
     void allOff( void );
     void advance( void );

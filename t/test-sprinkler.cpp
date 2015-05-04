@@ -2,8 +2,8 @@
 #include "MockWProgram/MockWProgram.hpp"
 #include "Sprinkler.h"
 
-#define FIRST_ZONE_PIN 2
-#define ZONE_COUNT     8
+#define FIRST_ZONE_PIN 5
+#define ZONE_COUNT     4
 #define ZONE_ON        LOW
 #define ZONE_OFF       HIGH
 

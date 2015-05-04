@@ -2,9 +2,16 @@
 
 /*
  *
+ * EthernetShield
+ *   communicates over SPI bus:
+ *     uno: pins 11,12,13
+ *     mega: pins 50,51,52,53
+ *   selects the W5100 via pin 10
+ *   selects the sdcard via pin 4
  */
 
 #define WEBDUINO_FAIL_MESSAGE "<h1>Request Failed</h1>"
+// #define WEBDUINO_SERIAL_DEBUGGING true
 #include "SPI.h" // new include
 #include "avr/pgmspace.h" // new include
 #include "Ethernet.h"
@@ -12,8 +19,8 @@
 #include "Sprinkler.h"
 
 #define VERSION_STRING "0.2"
-#define FIRST_ZONE_PIN 2
-#define ZONE_COUNT     8
+#define FIRST_ZONE_PIN 5
+#define ZONE_COUNT     5
 #define MAX_DURATION   60
 #define ZONE_ON        LOW
 #define ZONE_OFF       HIGH
@@ -70,6 +77,7 @@ void zonesStatus( WebServer &server ) {
     server << "]\n";
 }
 
+
 void zoneUpdate( WebServer &server, int zone_id ) {
     bool repeat;
     char name[PARAM_SIZE], value[VALUE_SIZE];
@@ -93,7 +101,10 @@ void zoneUpdate( WebServer &server, int zone_id ) {
                 on_set = true;
             }
         }
-        Serial << name << " = " << value << "\n";
+        // Serial << name << " = " << value << "\r\n";
+        // Serial.print( name );
+        // Serial.print( " = " );
+        // Serial.println( value );
     }
 
     if( ! on_set ) {
@@ -107,16 +118,15 @@ void zoneUpdate( WebServer &server, int zone_id ) {
         server << "{ error: 'zone in URL and param differ' }\n";
         return;
     }
-    if( zone > 0 && zone < ZONE_COUNT ) {
+    if( zone < 0 || zone >= ZONE_COUNT ) {
         server.httpSuccess( "application/json" );
         server << "{ error: 'zone out of range' }\n";
         return;
     }
     if( on && duration > 0 ) {
         if( sprinkler.on( zone, duration ) ) {
-            // server.httpSeeOther(PREFIX "/form");
             server.httpSuccess( "application/json" );
-            server << "{ success: 'zone queued for " << duration << "' }\n";
+            server << "{ success: 'zone " << zone << " queued for " << duration << "' }\n";
             return;
         } else {
             server.httpSuccess( "application/json" );
@@ -141,6 +151,8 @@ void zoneUpdate( WebServer &server, int zone_id ) {
     server << "{ message: 'nothing to do' }\n";
 }
 
+
+/*
 // on = true -> need zone[] and duration[]
 // on = false -> zone[] or allOff
 void zonesUpdate( WebServer & server ) {
@@ -205,24 +217,25 @@ void zonesUpdate( WebServer & server ) {
                 server << "{ errror: 'duration out of range' }\n";
                 return;
             }
-            sprinkler.on( zone[i], duration[i] );
+            // sprinkler.on( zone[i], duration[i] );
         }
 
     } else {
         if( zone_idx == 0 ) {
-            sprinkler.allOff();
+            // sprinkler.allOff();
             server.httpSuccess( "application/json" );
             server << "{ success: 'all zones turned off' }\n";
             return;
         } else {
-            for( int i = 0; i < zone_idx; i++ )
-                sprinkler.off( zone[i] );
+            for( int i = 0; i < zone_idx; i++ ){}
+                // sprinkler.off( zone[i] );
             server.httpSuccess( "application/json" );
             server << "{ success: 'zones turned off' }\n";
             return;
         }
     }
 }
+*/
 
 void zoneCmd( WebServer & server, WebServer::ConnectionType type,
               char **url_path, char *url_tail, bool tail_complete ) {
@@ -258,8 +271,8 @@ void zonesCmd( WebServer & server, WebServer::ConnectionType type,
                char *url_tail, bool tail_complete ) {
 
     if ( type == WebServer::POST || type == WebServer::PUT ) {
-        zonesUpdate( server );
-        return;
+        // zonesUpdate( server );
+        // return;
     }
 
     server.httpSuccess( "application/json" );
@@ -272,23 +285,23 @@ void zonesCmd( WebServer & server, WebServer::ConnectionType type,
 void debugCmd( WebServer & server, WebServer::ConnectionType type,
                char *url_tail, bool tail_complete ) {
     P( htmlHead ) =
-        "<html>"
-        "<head>"
-        "<title>Arduino Sprinkler Server</title>"
+        "<html><head>\n"
+        "<title>Arduino Sprinkler Server</title>\n"
         "</head>"
         "<body>";
 
     server.httpSuccess();
     server.printP( htmlHead );
 
-    server << "<h1>Digital Pins</h1><p>";
+    server << "<h1>Digital Pins</h1><p>\n";
 
     // ignore the pins we use to talk to the Ethernet chip
     for ( int i = 2; i < 10; ++i ) {
+        if( i == 4 ) continue;
         int val = digitalRead( i );
         server << "Digital " << i << ": ";
         server << ( val ? "HIGH" : "LOW" );
-        server << "<br/>";
+        server << "<br/>\n";
     }
 
     server << "</body></html>";
@@ -310,8 +323,8 @@ void defaultCmd( WebServer & server, WebServer::ConnectionType type,
 }
 
 void setup() {
-    Serial.begin( 9600 );
-    Serial.println( "beginning setup" );
+    // Serial.begin( 9600 );
+    // Serial.println( "beginning setup" );
 
     Ethernet.begin( mac, ip );
     webserver.begin();
@@ -321,7 +334,7 @@ void setup() {
     webserver.addCommand( "debug", &debugCmd );
     webserver.setUrlPathCommand( &zoneCmd );
 
-    Serial.println( "completed setup" );
+    // Serial.println( "completed setup" );
 }
 
 void loop() {

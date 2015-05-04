@@ -3,10 +3,19 @@
 Sprinkler::Sprinkler( uint8_t first_pin, uint8_t zone_count ) {
     // TODO: error if first_pin or zone_count out of bounds
     // TODO: shouldn't use pins > 12, uno flashes pin 13 at startup
+    // TODO: shouldn't use pins < 3, uno uses for serial comm
     _first_pin = first_pin;
     _zone_count = zone_count;
 
+    Serial.print( "constructor: _first_pin = " );
+    Serial.print( _first_pin );
+    Serial.print( ", _zone_count = " );
+    Serial.println(  _zone_count );
+
     for( uint8_t i = 0; i < _zone_count; i++ ) {
+        // Serial << "init: pin " << (  _first_pin + i ) << "\n";
+        // Serial.print( "init: pin " );
+        // Serial.println(  _first_pin + i );
         pinMode( _first_pin + i, OUTPUT );
         digitalWrite( _first_pin + i, ZONE_OFF );
     }
@@ -25,7 +34,7 @@ Sprinkler::Sprinkler( uint8_t first_pin, uint8_t zone_count ) {
 }
 
 // If zone is already queued or on, this will update the duration
-bool Sprinkler::on( int8_t zone_id, unsigned int duration_in_mins ) {
+bool Sprinkler::on( uint8_t zone_id, unsigned int duration_in_mins ) {
     if( zone_id < 0 || zone_id > MAX_ZONES ) return false;
     if( ! ( duration_in_mins > 0 ) ) return false;
 
@@ -43,7 +52,7 @@ bool Sprinkler::on( int8_t zone_id, unsigned int duration_in_mins ) {
     return true;
 }
 
-bool Sprinkler::off( int8_t zone_id ) {
+bool Sprinkler::off( uint8_t zone_id ) {
     if( zone_id < 0 || zone_id > MAX_ZONES )
         return false;
 
@@ -71,7 +80,7 @@ void Sprinkler::allOff( void ) {
     for( uint8_t i = 0; i < _zone_count; i++ ) off( i );
 }
 
-// bool Sprinkler::pump( int8_t zone_id ){}
+// bool Sprinkler::pump( uint8_t zone_id ){}
 
 void Sprinkler::advance( void ) {
     if( _queue_head != NULL ) off( _queue_head->zone );
@@ -109,7 +118,7 @@ bool Sprinkler::status( uint8_t zone_id, ZoneStatus *status ) {
     status->zone = zone->zone;
     status->on = zone->on;
     status->queued = zone->queued;
-    status->duration = zone->duration;
+    status->duration = zone->duration / ( 1000L * 60L );
     status->time_left = zone->on
                         ?  (  ( zone->duration - ( now - zone->start_time ) )
                               / ( 1000L * 60L ) )
@@ -207,15 +216,17 @@ bool Sprinkler::update( unsigned long now ) {
 
 void Sprinkler::startFlow( uint8_t zone_id ) {
     fprintf( stderr, "# startFlow: %d\n", zone_id );
-    // Serial.print( "startFlow" );
-    // Serial.println( _first_pin + zone_id );
+    // Serial << "startFlow: pin " << (  _first_pin + zone_id ) << "\n";
+    // Serial.print( "startFlow: pin " );
+    // Serial.println(  _first_pin + zone_id );
     digitalWrite( _first_pin + zone_id, ZONE_ON );
 }
 
 void Sprinkler::stopFlow( uint8_t zone_id ) {
     fprintf( stderr, "# stopFlow: %d\n", zone_id );
-    // Serial.print( "stopFlow" );
-    // Serial.println( _first_pin + zone_id );
+    // Serial << "stopFlow: pin " << (  _first_pin + zone_id ) << "\n";
+    // Serial.print( "stopFlow: pin " );
+    // Serial.println(  _first_pin + zone_id );
     digitalWrite( _first_pin + zone_id, ZONE_OFF );
 }
 
