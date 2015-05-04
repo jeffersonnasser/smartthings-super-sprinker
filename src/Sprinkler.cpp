@@ -27,7 +27,7 @@ Sprinkler::Sprinkler( uint8_t first_pin, uint8_t zone_count ) {
 // If zone is already queued or on, this will update the duration
 bool Sprinkler::on( int8_t zone_id, unsigned int duration_in_mins ) {
     if( zone_id < 0 || zone_id > MAX_ZONES ) return false;
-    if( ! duration_in_mins > 0 ) return false;
+    if( ! ( duration_in_mins > 0 ) ) return false;
 
     Zone *zone = &_zones[zone_id];
 
@@ -100,7 +100,7 @@ void itoa( unsigned int num, char *str, int radix ) {
 #endif
 
 // status should start with ok
-bool Sprinkler::status( unsigned int zone_id, ZoneStatus *status ) {
+bool Sprinkler::status( uint8_t zone_id, ZoneStatus *status ) {
     if( zone_id < 0 || zone_id >= _zone_count ) return false;
 
     unsigned long now = millis();
@@ -218,3 +218,4 @@ void Sprinkler::stopFlow( uint8_t zone_id ) {
     // Serial.println( _first_pin + zone_id );
     digitalWrite( _first_pin + zone_id, ZONE_OFF );
 }
+

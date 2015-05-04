@@ -1,23 +1,6 @@
-/* Web_Demo.pde -- sample code for Webduino server library */
+/* RESTSprinkler.ino -- REST API for Sprinkler */
 
 /*
- * To use this demo,  enter one of the following USLs into your browser.
- * Replace "host" with the IP address assigned to the Arduino.
- *
- * http://host/
- * http://host/json
- *
- * This URL brings up a display of the values READ on digital pins 0-9
- * and analog pins 0-5.  This is done with a call to defaultCmd.
- *
- *
- * http://host/form
- *
- * This URL also brings up a display of the values READ on digital pins 0-9
- * and analog pins 0-5.  But it's done as a form,  by the "formCmd" function,
- * and the digital pins are shown as radio buttons you can change.
- * When you click the "Submit" button,  it does a POST that sets the
- * digital pins,  re-reads them,  and re-displays the form.
  *
  */
 
@@ -28,8 +11,8 @@
 #include "WebServer.h"
 #include "Sprinkler.h"
 
-#define VERSION_STRING "0.1"
-#define FIRST_ZONE_PIN 5
+#define VERSION_STRING "0.2"
+#define FIRST_ZONE_PIN 2
 #define ZONE_COUNT     8
 #define MAX_DURATION   60
 #define ZONE_ON        LOW
@@ -38,13 +21,13 @@
 #define VALUE_SIZE     16
 
 // no-cost stream operator as described at
-// http://sundial.org/arduino/?page_id=119
+// http://arduiniana.org/libraries/streaming/
+// http://playground.arduino.cc/Main/StreamingOutput
 template<class T>
 inline Print &operator <<( Print &obj, T arg ) {
     obj.print( arg );
     return obj;
 }
-
 
 // CHANGE THIS TO YOUR OWN UNIQUE VALUE
 static uint8_t mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xAE, 0xED };
@@ -328,13 +311,12 @@ void defaultCmd( WebServer & server, WebServer::ConnectionType type,
 
 void setup() {
     Serial.begin( 9600 );
+    Serial.println( "beginning setup" );
 
-    // set pins 0-8 for digital input
     Ethernet.begin( mac, ip );
     webserver.begin();
 
     webserver.setDefaultCommand( &defaultCmd );
-    // webserver.addCommand( "zone", &zoneCmd );
     webserver.addCommand( "zones", &zonesCmd );
     webserver.addCommand( "debug", &debugCmd );
     webserver.setUrlPathCommand( &zoneCmd );

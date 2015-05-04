@@ -75,7 +75,7 @@ class Sprinkler {
     void allOn( unsigned int *durations_in_mins, unsigned int size );
     void allOff( void );
     void advance( void );
-    bool status( unsigned int zone_id, ZoneStatus *status );
+    bool status( uint8_t zone_id, ZoneStatus *status );
     void dump( void );
 
     bool update( void );

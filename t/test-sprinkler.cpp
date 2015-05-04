@@ -2,7 +2,7 @@
 #include "MockWProgram/MockWProgram.hpp"
 #include "Sprinkler.h"
 
-#define FIRST_ZONE_PIN 5
+#define FIRST_ZONE_PIN 2
 #define ZONE_COUNT     8
 #define ZONE_ON        LOW
 #define ZONE_OFF       HIGH
@@ -22,8 +22,6 @@ void setup() {
 }
 
 void loop() {
-    char status[128] = "";
-
     no_plan();
 
     // Can we turn a zone on?
@@ -92,11 +90,14 @@ void loop() {
     advance_time_by_sec( 10 );
     areAllZonesOff();
 
-    // TODO: documents how to size
-    sprinkler.status( status );
-    ok( !strcmp( status, "ok,off0,off1,off2,off3,off4,off5,off6,off7" ),
-        "Status correct" );
+    for( int i = 0; i < ZONE_COUNT; i++ ) {
+        ZoneStatus status;
+        sprinkler.status( 0, &status );
+        is( status.on, false, "... zone is off" );
+        is( status.queued, false, "... zone is not queued" );
+    }
 
+    // ok( !strcmp( status, "ok,off0,off1,off2,off3,off4,off5,off6,off7" ),
     // ok( sprinkler.pump(1), "Do stuff with pump");
 
     done_testing();
@@ -146,3 +147,4 @@ int main( int argc, char **argv ) {
     setup();
     loop();
 }
+
