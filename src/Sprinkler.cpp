@@ -119,9 +119,9 @@ bool Sprinkler::status( uint8_t zone_id, ZoneStatus *status ) {
     status->on = zone->on;
     status->queued = zone->queued;
     status->duration = zone->duration / ( 1000L * 60L );
-    status->time_left = zone->on
+    status->secs_left = zone->on
                         ?  (  ( zone->duration - ( now - zone->start_time ) )
-                              / ( 1000L * 60L ) )
+                              / 1000L )
                         : 0;
 
     return true;

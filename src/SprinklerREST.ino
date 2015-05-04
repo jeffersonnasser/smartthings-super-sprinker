@@ -17,6 +17,7 @@
 #include "Ethernet.h"
 #include "WebServer.h"
 #include "Sprinkler.h"
+#include "Timer.h"
 
 #define VERSION_STRING "0.2"
 #define FIRST_ZONE_PIN 5
@@ -26,6 +27,7 @@
 #define ZONE_OFF       HIGH
 #define PARAM_SIZE     16
 #define VALUE_SIZE     16
+#define TIMER_PERIOD   2000
 
 // no-cost stream operator as described at
 // http://arduiniana.org/libraries/streaming/
@@ -46,6 +48,7 @@ static uint8_t ip[] = { 192, 168, 1, 210 };
 
 WebServer webserver( PREFIX, 80 );
 Sprinkler sprinkler( FIRST_ZONE_PIN, ZONE_COUNT );  // constructor
+Timer t;
 
 // commands are functions that get called by the webserver framework
 // they can read any posted data from client, and they output to server
@@ -64,7 +67,7 @@ void zoneStatus( WebServer &server, int zone_id ) {
     server << " 'on': " << ( zone.on ? "true" : "false" ) << ",";
     server << " 'queued': " << ( zone.queued ? "true" : "false" ) << ",";
     server << " 'duration': " << zone.duration << ",";
-    server << " 'time_left': " << zone.time_left;
+    server << " 'secs_left': " << zone.secs_left;
     server << " }\n";
 }
 
@@ -322,6 +325,10 @@ void defaultCmd( WebServer & server, WebServer::ConnectionType type,
     server << "</body></html>";
 }
 
+void do_sprinkler_update( void ){
+    sprinkler.update();
+}
+
 void setup() {
     // Serial.begin( 9600 );
     // Serial.println( "beginning setup" );
@@ -334,6 +341,7 @@ void setup() {
     webserver.addCommand( "debug", &debugCmd );
     webserver.setUrlPathCommand( &zoneCmd );
 
+    t.every( TIMER_PERIOD, do_sprinkler_update );
     // Serial.println( "completed setup" );
 }
 
@@ -342,5 +350,5 @@ void loop() {
     webserver.processConnection();
 
     // do stuff!
-    sprinkler.update();
+    t.update();
 }

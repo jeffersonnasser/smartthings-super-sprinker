@@ -65,7 +65,7 @@ typedef struct ZoneStatus {
     bool    queued;
     bool    on;
     unsigned long duration;
-    unsigned long time_left;
+    unsigned long secs_left;
 } ZoneStatus;
 
 class Sprinkler {
