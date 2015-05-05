@@ -56,17 +56,25 @@ Timer t;
 
 // commands are functions that get called by the webserver framework
 // they can read any posted data from client, and they output to server
+const __FlashStringHelper * _okMsg() {
+    return F( "status: 'success', " );
+}
+const __FlashStringHelper * _errMsg() {
+    return F( "status: 'failure', " );
+}
 
 void zoneStatus( WebServer &server, uint8_t zone_id ) {
     ZoneStatus zone;
 
     if( ! sprinkler.status( zone_id, &zone ) ) {
-        // TODO: too late
-        server.httpNoContent();
+        server << "{" << _errMsg() << ", ";
+        server << F( " 'zone': " ) << zone.zone;
+        server << F( " 'message': 'error returned by status()' " );
+        server << "}\n";
         return;
     }
 
-    server << "{";
+    server << "{" << _okMsg() << ", ";
     server << " 'zone': " << zone.zone << ",";
     server << " 'on': " << ( zone.on ? "true" : "false" ) << ",";
     server << " 'queued': " << ( zone.queued ? "true" : "false" ) << ",";
@@ -115,18 +123,21 @@ void zoneUpdate( WebServer &server, uint8_t zone_id ) {
 
     if( ! on_set ) {
         server.httpSuccess( "application/json" );
-        server << F( "{ error: 'on must be set to true or false' }\n" );
+        server << "{" << _errMsg() << ", ";
+        server << F( "message: 'on must be set to true or false' }\n" );
         return;
     }
     if( zone < 0 ) zone = zone_id;
     if( zone != zone_id ) {
         server.httpSuccess( "application/json" );
-        server << F( "{ error: 'zone in URL and param differ' }\n" );
+        server << "{" << _errMsg() << ", ";
+        server << F( "message: 'zone in URL and param differ' }\n" );
         return;
     }
     if( zone < 0 || zone >= ZONE_COUNT ) {
         server.httpSuccess( "application/json" );
-        server << F( "{ error: 'zone out of range' }\n" );
+        server << "{" << _errMsg() << ", ";
+        server << F( "message: 'zone out of range' }\n" );
         return;
     }
     if( on && duration > 0 ) {
@@ -136,7 +147,8 @@ void zoneUpdate( WebServer &server, uint8_t zone_id ) {
             return;
         } else {
             server.httpSuccess( "application/json" );
-            server << F( "{ errror: 'error running sprinkler.on()' }\n" );
+            server << "{" << _errMsg() << ", ";
+            server << F( "message: 'error running sprinkler.on()' }\n" );
             return;
         }
     }
@@ -144,11 +156,13 @@ void zoneUpdate( WebServer &server, uint8_t zone_id ) {
         if( sprinkler.off( zone ) ) {
             // server.httpSeeOther(PREFIX "/form");
             server.httpSuccess( "application/json" );
-            server << F( "{ success: 'zone turned off' }\n" );
+            server << "{" << _okMsg() << ", ";
+            server << F( "message: 'zone turned off' }\n" );
             return;
         } else {
             server.httpSuccess( "application/json" );
-            server << F( "{ errror: 'error running sprinkler.off()' }\n" );
+            server << "{" << _errMsg() << ", ";
+            server << F( "message: 'error running sprinkler.off()' }\n" );
             return;
         }
     }
@@ -157,13 +171,78 @@ void zoneUpdate( WebServer &server, uint8_t zone_id ) {
     server << F( "{ message: 'nothing to do' }\n" );
 }
 
+void do_advance( WebServer &server ) {
+    sprinkler.advance();
+    server.httpSuccess( "application/json" );
+    server << "{" << _okMsg() << ", ";
+    server << F( "message: 'sprinkler advanced' }\n" );
+    return;
+}
+
+void do_multi_zone_on(  WebServer &server, uint8_t *zone, uint8_t zone_cnt,
+                        uint8_t *duration, uint8_t duration_cnt ) {
+
+    if( zone_cnt == 0 ) {
+        server.httpSuccess( "application/json" );
+        server << "{" << _errMsg() << ", ";
+        server << F( "message: 'need to pass the zones to turn on in zone[]' }\n" );
+        return;
+    }
+    if( zone_cnt != duration_cnt ) {
+        server.httpSuccess( "application/json" );
+        server << "{" << _errMsg() << ", ";
+        server << F( "message: 'need to pass the durations for each zone in duration[]' }\n" );
+        return;
+    }
+    for( uint8_t i = 0; i < zone_cnt; i++ ) {
+        if( zone[i] < 0 || zone[i] >= ZONE_COUNT ) {
+            server.httpSuccess( "application/json" );
+            server << "{" << _errMsg() << ", ";
+            server << F( "message: 'zone in zone[] out of range' }\n" );
+            return;
+        }
+        if( duration[i] < 0 || duration[i] > MAX_DURATION ) {
+            server.httpSuccess( "application/json" );
+            server << "{" << _errMsg() << ", ";
+            server << F( "message: 'duration out of range' }\n" );
+            return;
+        }
+        sprinkler.on( zone[i], duration[i] );
+    }
+    server.httpSuccess( "application/json" );
+    server << F( "{ message: 'zones successfully scheduled' }\n" );
+    return;
+}
+
+void do_multi_zone_off( WebServer &server, uint8_t *zone, uint8_t zone_cnt ) {
+
+    if( zone_cnt == 0 ) {
+        sprinkler.allOff();
+        server.httpSuccess( "application/json" );
+        server << "{" << _okMsg() << ", ";
+        server << F( "message: 'all zones turned off' }\n" );
+        return;
+    } else {
+        for( uint8_t i = 0; i < zone_cnt; i++ )
+            sprinkler.off( zone[i] );
+
+        server.httpSuccess( "application/json" );
+        server << "{" << _okMsg() << ", ";
+        server << F( "message: 'zones turned off' }\n" );
+        return;
+    }
+
+}
+
+
 // on = true -> need zone[] and duration[]
 // on = false -> zone[] or allOff
 void zonesUpdate( WebServer & server ) {
     char name[PARAM_SIZE], value[VALUE_SIZE];
 
     bool on = false;
-    bool on_set = false;
+    bool off = false;
+    bool advance = false;
     uint8_t zone[ZONE_COUNT];
     uint8_t duration[ZONE_COUNT];
     uint8_t zone_cnt = 0;
@@ -177,76 +256,32 @@ void zonesUpdate( WebServer & server ) {
             duration[duration_cnt++] = atoi( value );
 
         if( strcmp( name, "on" ) == 0 ) {
-            if( strcasecmp( value, "true" ) == 0  ) {
-                on = true;
-                on_set = true;
-            } else if( strcasecmp( value, "false" ) == 0  ) {
-                on = false;
-                on_set = true;
-            }
+            if( strcasecmp( value, "true" ) == 0  ) on = true;
+            else if( strcasecmp( value, "false" ) == 0  )  off = true;
         }
+
+        if( strcmp( name, "zone" ) == 0 && strcmp( value, "next" ) == 0 )
+            advance = true;
 
         // Stop processing if too many
         if( zone_cnt >= ZONE_COUNT || duration_cnt >= ZONE_COUNT ) {
             server.httpSuccess( "application/json" );
-            server << F( "{ errror: 'too many zone[] or duration[] entries' }\n" );
+            server << "{" << _errMsg() << ", ";
+            server << F( "message: 'too many zone[] or duration[] entries' }\n" );
             return;
         }
     }
 
-    if( !on_set ) {
-        server.httpSuccess( "application/json" );
-        server << F( "{ errror: 'on needs to be set to true or false' }\n" );
-        return;
-    }
-    if( on ) {
+    if( advance ) return do_advance( server );
+    else if( on ) return do_multi_zone_on( server, zone, zone_cnt,
+                                               duration, duration_cnt );
+    else if( off ) return do_multi_zone_off( server, zone, zone_cnt );
 
-        if( zone_cnt == 0 ) {
-            server.httpSuccess( "application/json" );
-            server << F( "{ errror: 'need to pass the zones to turn on in zone[]' }\n" );
-            return;
-        }
-        if( zone_cnt != duration_cnt ) {
-            server.httpSuccess( "application/json" );
-            server << F( "{ errror: 'need to pass the durations for each zone in duration[]' }\n" );
-            return;
-        }
-        for( uint8_t i = 0; i < zone_cnt; i++ ) {
-            if( zone[i] < 0 || zone[i] >= ZONE_COUNT ) {
-                server.httpSuccess( "application/json" );
-                server << F( "{ errror: 'zone in zone[] out of range' }\n" );
-                return;
-            }
-            if( duration[i] < 0 || duration[i] > MAX_DURATION ) {
-                server.httpSuccess( "application/json" );
-                server << F( "{ errror: 'duration out of range' }\n" );
-                return;
-            }
-            sprinkler.on( zone[i], duration[i] );
-        }
-        server.httpSuccess( "application/json" );
-        server << F( "{ message: 'zones successfully scheduled' }\n" );
-        return;
-
-    } else {
-
-        if( zone_cnt == 0 ) {
-            sprinkler.allOff();
-            server.httpSuccess( "application/json" );
-            server << F( "{ success: 'all zones turned off' }\n" );
-            return;
-        } else {
-            for( uint8_t i = 0; i < zone_cnt; i++ )
-                sprinkler.off( zone[i] );
-
-            server.httpSuccess( "application/json" );
-            server << F( "{ success: 'zones turned off' }\n" );
-            return;
-        }
-
-    }
+    server.httpSuccess( "application/json" );
+    server << "{" << _errMsg() << ", ";
+    server << F( "message: 'on needs to be set to true or false' }\n" );
+    return;
 }
-
 void zoneCmd( WebServer & server, WebServer::ConnectionType type,
               char **url_path, char *url_tail, bool tail_complete ) {
 
