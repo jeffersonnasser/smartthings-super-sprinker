@@ -3,7 +3,7 @@
 #include "Sprinkler.h"
 
 #define FIRST_ZONE_PIN 5
-#define ZONE_COUNT     4
+#define ZONE_COUNT     5
 #define ZONE_ON        LOW
 #define ZONE_OFF       HIGH
 
@@ -61,7 +61,7 @@ void loop() {
 
     // Turn all on at once
     diag( "Turn all zones on" );
-    unsigned int durations[ZONE_COUNT];
+    uint8_t durations[ZONE_COUNT];
     for( uint8_t i = 0; i < ZONE_COUNT; i++ ) durations[i] = i + 1;
     sprinkler.allOn( durations, ZONE_COUNT );
     advance_time_by_sec( 0 ); // 0 starts at 0

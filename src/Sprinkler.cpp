@@ -7,10 +7,10 @@ Sprinkler::Sprinkler( uint8_t first_pin, uint8_t zone_count ) {
     _first_pin = first_pin;
     _zone_count = zone_count;
 
-    Serial.print( "constructor: _first_pin = " );
-    Serial.print( _first_pin );
-    Serial.print( ", _zone_count = " );
-    Serial.println(  _zone_count );
+    // Serial.print( "constructor: _first_pin = " );
+    // Serial.print( _first_pin );
+    // Serial.print( ", _zone_count = " );
+    // Serial.println(  _zone_count );
 
     for( uint8_t i = 0; i < _zone_count; i++ ) {
         // Serial << "init: pin " << (  _first_pin + i ) << "\n";
@@ -74,7 +74,7 @@ bool Sprinkler::off( uint8_t zone_id ) {
 }
 
 void Sprinkler::allOn( uint8_t *durations_in_mins, uint8_t size ) {
-    assert( size >= 0 && size < _zone_count );
+    assert( size >= 0 && size <= _zone_count );
     for( uint8_t i = 0; i < size; i++ ) on( i, durations_in_mins[i] );
 }
 
