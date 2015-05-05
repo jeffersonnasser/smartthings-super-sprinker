@@ -53,6 +53,7 @@
 
 typedef struct Zone {
     uint8_t zone;
+    uint8_t pin;
     bool    queued;
     bool    on;
     unsigned long duration;
@@ -63,6 +64,7 @@ typedef struct Zone {
 
 typedef struct ZoneStatus {
     uint8_t zone;
+    uint8_t pin;
     bool    queued;
     bool    on;
     unsigned long duration;
@@ -72,7 +74,7 @@ typedef struct ZoneStatus {
 class Sprinkler {
 
   public:
-    Sprinkler( uint8_t first_pin, uint8_t zone_count );
+    Sprinkler( uint8_t *pins, uint8_t zone_count );
 
     bool on( uint8_t zone_id, uint8_t duration_in_mins );
     bool off( uint8_t zone_id );
@@ -87,7 +89,6 @@ class Sprinkler {
     bool update( unsigned long now );
 
   protected:
-    uint8_t _first_pin;
     uint8_t _zone_count;
 
     Zone _zones[SPRINKLER_MAX_ZONES];

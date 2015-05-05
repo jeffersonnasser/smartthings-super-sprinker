@@ -24,14 +24,8 @@
 #include "Timer.h"
 
 #define VERSION_STRING "0.2"
-#define FIRST_ZONE_PIN 5
-#define ZONE_COUNT     5
-#define MAX_DURATION   60
-#define ZONE_ON        LOW
-#define ZONE_OFF       HIGH
 #define PARAM_SIZE     16
 #define VALUE_SIZE     16
-#define TIMER_PERIOD   2000
 
 // no-cost stream operator as described at
 // http://arduiniana.org/libraries/streaming/
@@ -51,7 +45,13 @@ static uint8_t ip[] = { 192, 168, 1, 210 };
 #define PREFIX ""
 
 WebServer webserver( PREFIX, 80 );
-Sprinkler sprinkler( FIRST_ZONE_PIN, ZONE_COUNT );  // constructor
+
+#define ZONE_COUNT     8
+#define MAX_DURATION   60
+#define TIMER_PERIOD   5000
+uint8_t zone_pins[ZONE_COUNT] = { 2, 3, 5, 6, 7, 8, 9, A0 };
+Sprinkler sprinkler( zone_pins, ZONE_COUNT );  // constructor
+
 Timer t;
 
 // commands are functions that get called by the webserver framework

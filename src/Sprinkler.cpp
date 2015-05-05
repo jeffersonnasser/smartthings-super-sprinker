@@ -1,10 +1,9 @@
 #include "Sprinkler.h"
 
-Sprinkler::Sprinkler( uint8_t first_pin, uint8_t zone_count ) {
+Sprinkler::Sprinkler( uint8_t *pins, uint8_t zone_count ) {
     // TODO: error if first_pin or zone_count out of bounds
     // TODO: shouldn't use pins > 12, uno flashes pin 13 at startup
     // TODO: shouldn't use pins < 3, uno uses for serial comm
-    _first_pin = first_pin;
     _zone_count = zone_count;
 
     // Serial.print( "constructor: _first_pin = " );
@@ -12,25 +11,27 @@ Sprinkler::Sprinkler( uint8_t first_pin, uint8_t zone_count ) {
     // Serial.print( ", _zone_count = " );
     // Serial.println(  _zone_count );
 
-    for( uint8_t i = 0; i < _zone_count; i++ ) {
-        // Serial << "init: pin " << (  _first_pin + i ) << "\n";
-        // Serial.print( "init: pin " );
-        // Serial.println(  _first_pin + i );
-        pinMode( _first_pin + i, OUTPUT );
-        digitalWrite( _first_pin + i, ZONE_OFF );
-    }
-
     _queue_head = NULL;
     _queue_tail = NULL;
 
     for( uint8_t i = 0; i < SPRINKLER_MAX_ZONES; i++ ) {
         _zones[i].zone = i;
+        _zones[i].pin = i < zone_count ? pins[i] : 0;
         _zones[i].on = false;
         _zones[i].queued = false;
         _zones[i].duration = 0;
         _zones[i].start_time = 0;
         _zones[i].next = NULL;
     }
+
+    for( uint8_t i = 0; i < _zone_count; i++ ) {
+        // Serial << "init: pin " << (  _first_pin + i ) << "\n";
+        // Serial.print( "init: pin " );
+        // Serial.println(  _first_pin + i );
+        pinMode( _zones[i].pin, OUTPUT );
+        digitalWrite( _zones[i].pin, ZONE_OFF );
+    }
+
 }
 
 // If zone is already queued or on, this will update the duration
@@ -135,6 +136,11 @@ void Sprinkler::dump( void ) {
         fprintf( stderr, "% 4d", _zones[i].zone );
     fprintf( stderr, "\n" );
 
+    fprintf( stderr, "# %6s: ", "pin" );
+    for( uint8_t i = 0; i < _zone_count; i++ )
+        fprintf( stderr, "% 4d", _zones[i].pin );
+    fprintf( stderr, "\n" );
+
     fprintf( stderr, "# %6s: ", "on" );
     for( uint8_t i = 0; i < _zone_count; i++ )
         fprintf( stderr, "% 4d", _zones[i].on );
@@ -221,7 +227,7 @@ void Sprinkler::startFlow( uint8_t zone_id ) {
     // Serial << "startFlow: pin " << (  _first_pin + zone_id ) << "\n";
     // Serial.print( "startFlow: pin " );
     // Serial.println(  _first_pin + zone_id );
-    digitalWrite( _first_pin + zone_id, ZONE_ON );
+    digitalWrite( _zones[zone_id].pin, ZONE_ON );
 }
 
 void Sprinkler::stopFlow( uint8_t zone_id ) {
@@ -229,5 +235,6 @@ void Sprinkler::stopFlow( uint8_t zone_id ) {
     // Serial << "stopFlow: pin " << (  _first_pin + zone_id ) << "\n";
     // Serial.print( "stopFlow: pin " );
     // Serial.println(  _first_pin + zone_id );
-    digitalWrite( _first_pin + zone_id, ZONE_OFF );
+    digitalWrite( _zones[zone_id].pin, ZONE_OFF );
 }
+

@@ -2,13 +2,13 @@
 #include "MockWProgram/MockWProgram.hpp"
 #include "Sprinkler.h"
 
-#define FIRST_ZONE_PIN 5
 #define ZONE_COUNT     5
 #define ZONE_ON        LOW
 #define ZONE_OFF       HIGH
 
+uint8_t zone_pins[ZONE_COUNT] = { 2, 3, 5, 6, 7 };
 unsigned long current_time; // So we can mess with the clock
-Sprinkler sprinkler( FIRST_ZONE_PIN, ZONE_COUNT );  // constructor
+Sprinkler sprinkler( zone_pins, ZONE_COUNT );  // constructor
 
 // Pre-declare helper/test functions
 void advance_time_by_min( unsigned long minutes );
@@ -116,7 +116,7 @@ void advance_time_by_sec( unsigned long seconds ) {
 void areAllZonesOff( ) {
     bool all_off = true;
     for( uint8_t i = 0; i < ZONE_COUNT; i++ ) {
-        if( digital_pins[ FIRST_ZONE_PIN + i ] != ZONE_OFF ) {
+        if( digital_pins[ zone_pins[i] ] != ZONE_OFF ) {
             all_off = false;
             fprintf( stderr, "# pin %d is on\n", i );
         }
@@ -130,11 +130,11 @@ void isZoneOn( uint8_t zone ) {
     desc[14] = zone % 9 + char( '0' );
     desc[13] = int( zone / 10 ) + char( '0' );
 
-    is( digital_pins[ FIRST_ZONE_PIN + zone ], ZONE_ON, desc );
+    is( digital_pins[ zone_pins[zone] ], ZONE_ON, desc );
 
     bool all_off = true;
     for( uint8_t i = 0; i < ZONE_COUNT; i++ ) {
-        if( i != zone && ( digital_pins[ FIRST_ZONE_PIN + i ] != ZONE_OFF ) ) {
+        if( i != zone && ( digital_pins[ zone_pins[i] ] != ZONE_OFF ) ) {
             all_off = false;
             fprintf( stderr, "# pin %d is on\n", i );
         }
