@@ -57,10 +57,10 @@ Timer t;
 // commands are functions that get called by the webserver framework
 // they can read any posted data from client, and they output to server
 const __FlashStringHelper * _okMsg() {
-    return F( "status: 'success', " );
+    return F( "status: 'success'" );
 }
 const __FlashStringHelper * _errMsg() {
-    return F( "status: 'failure', " );
+    return F( "status: 'failure'" );
 }
 
 void zoneStatus( WebServer &server, uint8_t zone_id ) {
