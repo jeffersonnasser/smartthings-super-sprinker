@@ -2,7 +2,7 @@
 *
 *
 *  Irrigation Scheduler SmartApp Smarter Lawn Controller
-*  Compatible with up to 24 Zones
+*  Compatible with up to arbitray number of Zones
 *
 *  Author: Stan Dotson (stan@dotson.info) and Matthew Nichols (matt@nichols.name)
 *  Date: 2014-06-16
@@ -159,7 +159,8 @@ def scheduleCheck() {
     log.info("Scheduler state: $schedulerState. Days since last watering: ${daysSince()}. Is watering day? ${isWateringDay()}. Enought time? ${enoughTimeElapsed(schedulerState)} ")
 
     if ((isWateringDay() && enoughTimeElapsed(schedulerState) && schedulerState != "delay") || schedulerState == "expedite") {
-        sendPush("$switches[0] Is Watering Now!" ?: "null pointer on app name")
+        // Should this be ${switches[0]}
+        sendPush("$switches Is Watering Now!" ?: "null pointer on app name")
         state.daysSinceLastWatering[state.currentTimerIx] = 0
         water()
         // Assuming that sprinklers will turn themselves off.
@@ -256,7 +257,7 @@ def water() {
     state.triggered = true
     if(anyZoneTimes()) {
         def zoneTimes = []
-        for(int z = 1; z <= 24; z++) {
+        for(int z = 1; z <= theZoneCount; z++) {
             def zoneTime = settings["zone${z}"]
             if(zoneTime) {
             zoneTimes += "${z}:${zoneTime}"
@@ -271,5 +272,10 @@ def water() {
 }
 
 def anyZoneTimes() {
-    return zone1 || zone2 || zone3 || zone4 || zone5 || zone6 || zone7 || zone8 || zone9 || zone10 || zone11 || zone12 || zone13 || zone14 || zone15 || zone16 || zone17 || zone18 || zone19 || zone20 || zone21 || zone22 || zone23 || zone24
+    for(int i = 1; i <= theZoneCount; i++) {
+        if( settings["zone${z}"] > 0 ){
+            return true
+        }
+    }
+    return false;
 }
