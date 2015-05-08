@@ -18,15 +18,15 @@ metadata {
     def theZoneCount = 8;
 
     definition (name: "Sprinkler Controller", namespace: "mvgrimes", author: "Mark Grimes") {
-        capability "Switch"
-        capability "Refresh"
-        capability "Polling"
+        capability "Switch"  // on, off
+        capability "Refresh" // refresh
+        capability "Polling" // poll
 
         for (int i = 1; i <= theZoneCount; i++ ) {
             command "RelayOn${i}"
-            // command "RelayOn${i}For"
             command "RelayOff${i}"
         }
+        command "OnWithZoneTimes"
 
         attribute "effect", "string"
     }
@@ -88,11 +88,10 @@ def parse(String description) {
     TRACE( "Parsing '${description}'" )
 
     def msg = parseLanMessage(description)
-
     log.debug "Body: ${msg.body}"
-    log.debug "Status: (${msg.json.status}) ${msg.json.message}"
 
     if( msg.json ){
+        log.debug "Status: (${msg.json.status}) ${msg.json.message}"
 
         if( msg.json.zones ){ // Updating statuses
             for( int i=0; i<msg.json.zones.size(); i++){
@@ -103,7 +102,7 @@ def parse(String description) {
         updateSwitchState();
 
     } else {
-        log.warn( "Recvd msg w/o json" )
+        log.warn( "Recvd msg w/o valid json" )
     }
 
 }
