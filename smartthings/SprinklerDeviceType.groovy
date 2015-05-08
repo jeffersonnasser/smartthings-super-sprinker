@@ -48,7 +48,7 @@ metadata {
 
     tiles {
         // TODO: define your main and details tiles here
-        standardTile("allZonesTile", "device.switch", width: 1, height: 1, canChangeIcon: true, canChangeBackground: true) {
+        standardTile("allZonesTile", "device.switch", width: 2, height: 2, canChangeIcon: true, canChangeBackground: true) {
             state "off", label: 'Start', action: "switch.on", icon: "st.Outdoor.outdoor12", backgroundColor: "#ffffff", nextState: "starting"
             state "on", label: 'Running', action: "switch.off", icon: "st.Health & Wellness.health7", backgroundColor: "#53a7c0", nextState: "stopping"
             state "starting", label: 'Starting...', action: "switch.on", icon: "st.Health & Wellness.health7", backgroundColor: "#53a7c0"
@@ -79,7 +79,7 @@ metadata {
         }
 
         main "allZonesTile"
-        details(["zoneOneTile","zoneTwoTile","zoneThreeTile","zoneFourTile","zoneFiveTile","zoneSixTile","zoneSevenTile","zoneEightTile","scheduleEffect","refreshTile"])
+        details(["allZonesTile","zoneOneTile","zoneTwoTile","zoneThreeTile","zoneFourTile","zoneFiveTile","zoneSixTile","zoneSevenTile","zoneEightTile","scheduleEffect","refreshTile"])
     }
 }
 
