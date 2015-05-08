@@ -1,0 +1,10 @@
+Arduino - Sprinkler
+* Specify switch HIGH/LOW activation as a constriction argument
+* Allow selection between multiple switch boards via another pin
+* Support shift registers (ie, 74HC595) for more zones
+
+Arduino - SprinklerREST
+
+SmartThings Device-Type
+
+SmartThings SmartApp
