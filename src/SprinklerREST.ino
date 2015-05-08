@@ -87,10 +87,10 @@ bool _zoneStatus( WebServer &server, uint8_t zone_id ) {
 void zoneStatus( WebServer &server, uint8_t zone_id ) {
     server << F( "{ \"zones\": [ " );
     if( _zoneStatus( server, zone_id ) ) {
-        server << " ],\n" << _okMsg() << ",\n";
+        server << " ],\n" << _okMsg() << ", ";
         server << F( "\"message\":\"status returned ok\"\n" );
     } else {
-        server << " ],\n" << _errMsg() << ",\n";
+        server << " ],\n" << _errMsg() << ", ";
         server << F( "\"message\":\"error returned by zone.status()\"\n" );
     }
     server << F( " }\n" );
@@ -112,7 +112,7 @@ bool _zonesStatus( WebServer &server ) {
 void zonesStatus( WebServer &server ) {
     server << "{\n";
     if( !_zonesStatus( server ) ) {
-        server << _okMsg() << ",\n";
+        server << _okMsg() << ", ";
         server << F( "\"message\": \"statuses returned ok\"\n" );
     } else {
         server << _errMsg() << ",\n";
@@ -146,7 +146,7 @@ void zoneUpdate( WebServer &server, uint8_t zone_id ) {
     }
 
     if( ! ( on || off ) ) {
-        server.httpSuccess( "application / json" );
+        server.httpSuccess( "application/json" );
         server << " {" << _errMsg() << ", ";
         server << F( "\"message\": \"on must be set to true or false\" }\n" );
         return;
@@ -169,7 +169,7 @@ void zoneUpdate( WebServer &server, uint8_t zone_id ) {
             server.httpSuccess( "application/json" );
             server << "{\n";
             _zonesStatus( server ); // Check return value?
-            server << _okMsg() << ",";
+            server << _okMsg() << ", ";
             server << " \"message\": "
                    << "\"zone " << zone << " queued for " << duration
                    << "\" }\n";
@@ -254,7 +254,7 @@ void do_multi_zone_off( WebServer &server, uint8_t *zone, uint8_t zone_cnt ) {
 
     if( zone_cnt == 0 ) {
         sprinkler.allOff();
-        server.httpSuccess( "application / json" );
+        server.httpSuccess( "application/json" );
         server << "{\n";
         _zonesStatus( server ); // Check return value?
         server << _okMsg() << ", ";
