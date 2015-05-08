@@ -134,31 +134,32 @@ private updateSwitchState(){
 // handle commands
 def on() {
     TRACE( "Executing 'on'" )
-    def query = [ "on", "true" ]
+
+    def zones = []
+    def durations = []
 
     for (int i = 1; i <= 8; i++ ) {
         def zone = NumeralToWord(i)
         def duration = settings["${zone}Timer"]
 
         // log.debug( "Checking settings[${zone}Timer] = ${duration}" )
-
         if( duration > 0 ){
             log.info("Zone ${zone} on for ${duration} minutes")
 
-            query.push( "zone[]" )
-            query.push( i - 1 )
-            query.push( "duration[]" )
-            query.push( duration )
+            zones.push( i - 1 )
+            durations.push( duration )
         }
     }
 
-    log.debug( "on putting -> ${query}" )
-    return restPUT( "/zones", query )
+    log.debug( "on putting -> ${zones} / ${durations}" )
+    return restPUT( "/zones", [ on: true, "zone[]": zones, "duration[]": durations ] )
 }
 
 def OnWithZoneTimes(value) {
     TRACE( "Executing 'allOn' with zone times [$value]" )
-    def query = [ "on", "true" ]
+
+    def zones = []
+    def durations = []
 
     for(z in value.split(",")) {
         def parts = z.split(":")
@@ -167,14 +168,12 @@ def OnWithZoneTimes(value) {
 
         log.info("Zone ${zone} on for ${duration} minutes")
 
-        query.push( "zone[]" )
-        query.push( zone - 1 )
-        query.push( "duration[]" )
-        query.push( duration )
+        zones.push( zone - 1 )
+        durations.push( duration )
     }
 
     log.debug( "putting -> ${query}" )
-    return restPUT( "/zones", query );
+    return restPUT( "/zones", [ on: true, "zone[]": zones, "duration[]": durations ] )
 }
 
 def off() {
@@ -265,14 +264,23 @@ private restRequest( method, path, query ){
 
     def body = ""
     def contentType = "application/json"
+
+    // If POST or PUT, convert query to form-urlencoded body
     if( method != "GET" ){
         contentType = "application/x-www-form-urlencoded"
 
-        for( int i=0; i<query.size(); i+=2 ){
+        query.each{ k, v ->
             // URLEncoder.encode() only takes strings
-            def key = URLEncoder.encode( "${query[i]}"   ).replaceAll('\\+','%20')
-            def val = URLEncoder.encode( "${query[i+1]}" ).replaceAll('\\+','%20')
-            body = body + "${key}=${val}&"
+            def key = URLEncoder.encode( "${k}"   ).replaceAll('\\+','%20')
+            if( v instanceof List ){
+                v.each{ item ->
+                    def val = URLEncoder.encode( "${item}" ).replaceAll('\\+','%20')
+                    body = body + "${key}=${val}&"
+                }
+            } else {
+                def val = URLEncoder.encode( "${v}" ).replaceAll('\\+','%20')
+                body = body + "${key}=${val}&"
+            }
         }
 
         query = []

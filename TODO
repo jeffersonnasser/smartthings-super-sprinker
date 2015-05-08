@@ -4,7 +4,10 @@ Arduino - Sprinkler
 * Support shift registers (ie, 74HC595) for more zones
 
 Arduino - SprinklerREST
+* Add support for event subscriptions
 
 SmartThings Device-Type
+* Turn zones into child switches
+* Handle map of repeating query params for GET correctly
 
 SmartThings SmartApp
