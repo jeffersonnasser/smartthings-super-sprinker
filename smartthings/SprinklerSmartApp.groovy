@@ -1,6 +1,6 @@
 /**
-*  
-* 
+*
+*
 *  Irrigation Scheduler SmartApp Smarter Lawn Controller
 *  Compatible with up to 24 Zones
 *
@@ -21,21 +21,23 @@
 *
 **/
 
+def theZoneCount = 8;
+
 definition(
-    name: "Irrigation Scheduler v2.92",
+    name: "Irrigation Scheduler v2.*",
     namespace: "d8adrvn/smart_sprinkler",
     author: "matt@nichols.name and stan@dotson.info",
     description: "Schedule sprinklers to run unless there is rain.",
     category: "Green Living",
-    version: "2.92",
+    version: "2.*",
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/water_moisture.png",
     iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/water_moisture@2x.png"
 )
 
 preferences {
-	page(name: "schedulePage", title: "Schedule", nextPage: "sprinklerPage", uninstall: true) {
-      	section("App configruation...") {
-        	label title: "Choose an title for App", required: true, defaultValue: "Irrigation Scheduler"
+    page(name: "schedulePage", title: "Schedule", nextPage: "sprinklerPage", uninstall: true) {
+        section("App configruation...") {
+            label title: "Choose an title for App", required: true, defaultValue: "Irrigation Scheduler"
         }
         section {
             input (
@@ -63,52 +65,31 @@ preferences {
             input "switches", "capability.switch", multiple: false
         }
         section("Zone Times...") {
-            input "zone1", "string", title: "Zone 1 Time", description: "minutes", multiple: false, required: false
-            input "zone2", "string", title: "Zone 2 Time", description: "minutes", multiple: false, required: false
-            input "zone3", "string", title: "Zone 3 Time", description: "minutes", multiple: false, required: false
-            input "zone4", "string", title: "Zone 4 Time", description: "minutes", multiple: false, required: false
-            input "zone5", "string", title: "Zone 5 Time", description: "minutes", multiple: false, required: false
-            input "zone6", "string", title: "Zone 6 Time", description: "minutes", multiple: false, required: false
-            input "zone7", "string", title: "Zone 7 Time", description: "minutes", multiple: false, required: false
-            input "zone8", "string", title: "Zone 8 Time", description: "minutes", multiple: false, required: false
-            input "zone9", "string", title: "Zone 9 Time", description: "minutes", multiple: false, required: false
-            input "zone10", "string", title: "Zone 10 Time", description: "minutes", multiple: false, required: false
-            input "zone11", "string", title: "Zone 11 Time", description: "minutes", multiple: false, required: false
-            input "zone12", "string", title: "Zone 12 Time", description: "minutes", multiple: false, required: false
-            input "zone13", "string", title: "Zone 13 Time", description: "minutes", multiple: false, required: false
-            input "zone14", "string", title: "Zone 14 Time", description: "minutes", multiple: false, required: false
-            input "zone15", "string", title: "Zone 15 Time", description: "minutes", multiple: false, required: false
-            input "zone16", "string", title: "Zone 16 Time", description: "minutes", multiple: false, required: false
-            input "zone17", "string", title: "Zone 17 Time", description: "minutes", multiple: false, required: false
-            input "zone18", "string", title: "Zone 18 Time", description: "minutes", multiple: false, required: false
-            input "zone19", "string", title: "Zone 19 Time", description: "minutes", multiple: false, required: false
-            input "zone20", "string", title: "Zone 20 Time", description: "minutes", multiple: false, required: false
-            input "zone21", "string", title: "Zone 21 Time", description: "minutes", multiple: false, required: false
-            input "zone22", "string", title: "Zone 22 Time", description: "minutes", multiple: false, required: false
-            input "zone23", "string", title: "Zone 23 Time", description: "minutes", multiple: false, required: false
-            input "zone24", "string", title: "Zone 24 Time", description: "minutes", multiple: false, required: false
+            for (int i = 1; i <= theZoneCount; i++ ) {
+                input "zone${i}", "number", title: "Zone ${i} Time", description: "minutes", multiple: false, required: false
+            }
         }
 
- //	}
-    
-//	page (name: "virtualRainGuage", title: "Virtual Rain Guage Setup", install: true) {
-		
+ // }
+
+//  page (name: "virtualRainGuage", title: "Virtual Rain Guage Setup", install: true) {
+
         section("Zip code to check weather...") {
             input "zipcode", "text", title: "Zipcode?", required: false
         }
-        
+
         section("Select which rain to add to guage...") {
-        	input "isYesterdaysRainEnabled", "boolean", title: "Yesterday's Rain", description: "Include?", defaultValue: "true", required: false
-        	input "isTodaysRainEnabled", "boolean", title: "Today's Rain", description: "Include?", defaultValue: "true", required: false
-        	input "isForecastRainEnabled", "boolean", title: "Today's Forecasted Rain", description: "Include?", defaultValue: "false", required: false
+            input "isYesterdaysRainEnabled", "boolean", title: "Yesterday's Rain", description: "Include?", defaultValue: "true", required: false
+            input "isTodaysRainEnabled", "boolean", title: "Today's Rain", description: "Include?", defaultValue: "true", required: false
+            input "isForecastRainEnabled", "boolean", title: "Today's Forecasted Rain", description: "Include?", defaultValue: "false", required: false
         }
-       
+
        section("Skip watering if more than... (default 0.5)") {
             input "wetThreshold", "decimal", title: "Inches?", required: false
         }
-        
+
     }
-}		
+}
 
 def installed() {
     scheduling()
@@ -148,28 +129,28 @@ def waterTimeThreeStart() {
 def scheduleCheck() {
 
     def schedulerState = switches?.latestValue("effect")?.toString() ?:"[noEffect]"
-        
+
 
     if (schedulerState == "onHold") {
         log.info("Sprinkler schedule on hold.")
         return
-    } 
-    
-	if (schedulerState == "skip") { 
-    	// delay this watering and reset device.effect to noEffect
-        schedulerState = "delay" 
+    }
+
+    if (schedulerState == "skip") {
+        // delay this watering and reset device.effect to noEffect
+        schedulerState = "delay"
         for(s in switches) {
             if("noEffect" in s.supportedCommands.collect { it.name }) {
                 s.noEffect()
                 log.info ("sent noEffect() to ${s}")
             }
         }
- 	}    
-    
-	if (schedulerState != "expedite") { 
-    	// Change to rain delay if wet
-    	schedulerState = isRainDelay() ? "delay" : schedulerState
- 	}
+    }
+
+    if (schedulerState != "expedite") {
+        // Change to rain delay if wet
+        schedulerState = isRainDelay() ? "delay" : schedulerState
+    }
 
     if (schedulerState != "delay") {
         state.daysSinceLastWatering[state.currentTimerIx] = daysSince() + 1
@@ -181,7 +162,7 @@ def scheduleCheck() {
         sendPush("$switches[0] Is Watering Now!" ?: "null pointer on app name")
         state.daysSinceLastWatering[state.currentTimerIx] = 0
         water()
-        // Assuming that sprinklers will turn themselves off. 
+        // Assuming that sprinklers will turn themselves off.
     }
 }
 
@@ -206,22 +187,22 @@ def daysSince() {
     state.daysSinceLastWatering[state.currentTimerIx] ?: 0
 }
 
-def isRainDelay() { 
+def isRainDelay() {
 
-	def rainGauge = 0
-    
-    if (isYesterdaysRainEnabled.equals("true")) {        
-    	rainGauge = rainGauge + wasWetYesterday()
-   	}
-    
-    if (isTodaysRainEnabled.equals("true")) {
-    	rainGauge = rainGauge + isWet()
+    def rainGauge = 0
+
+    if (isYesterdaysRainEnabled.equals("true")) {
+        rainGauge = rainGauge + wasWetYesterday()
     }
-    
+
+    if (isTodaysRainEnabled.equals("true")) {
+        rainGauge = rainGauge + isWet()
+    }
+
     if (isForecastRainEnabled.equals("true")) {
-    	rainGauge = rainGauge + isStormy()
-  	}
-    
+        rainGauge = rainGauge + isStormy()
+    }
+
     log.info ("Virtual rain gauge reads $rainGauge in")
     if (rainGauge > (wetThreshold?.toFloat() ?: 0.5)) {
         sendPush("Skipping watering today due to precipitation.")
@@ -248,7 +229,7 @@ def wasWetYesterday() {
     def yesterdaysPrecip=yesterdaysWeather.history.dailysummary.precipi.toArray()
     def yesterdaysInches=safeToFloat(yesterdaysPrecip[0])
     log.info("Checking yesterday's percipitation for $zipcode: $yesterdaysInches in")
-	return yesterdaysInches
+    return yesterdaysInches
 }
 
 
