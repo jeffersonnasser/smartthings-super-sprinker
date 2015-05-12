@@ -142,7 +142,14 @@ def on() {
         def zone = NumeralToWord(i)
         def duration = settings["${zone}Timer"]
 
-        // log.debug( "Checking settings[${zone}Timer] = ${duration}" )
+        try {
+            duration = duration.toInteger()
+        } catch(ClassCastException e) {
+            log.warn "Duration for ${zone} is not an integer '${duration}'"
+            continue
+        }
+
+        // log.debug( "Checking settings[${zone}Timer] = '${duration}'" )
         if( duration > 0 ){
             log.info("Zone ${zone} on for ${duration} minutes")
 

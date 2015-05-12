@@ -273,9 +273,16 @@ def water() {
 
 def anyZoneTimes() {
     for(int i = 1; i <= theZoneCount; i++) {
-        if( settings["zone${z}"] > 0 ){
-            return true
+        def duration = settings["zone${z}"]
+
+        try {
+            duration = duration.toInteger()
+        } catch(ClassCastException e) {
+            log.warn "Duration for ${zone} is not an integer '${duration}'"
+            continue
         }
+
+        if( duration > 0 ) return true
     }
     return false;
 }
