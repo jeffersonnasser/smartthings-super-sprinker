@@ -188,22 +188,39 @@ def off() {
     return restPUT( "/zones", [ on: false ] )
 }
 
-def RelayOn1() { return restPUT( "/zone/0", [ on: true, duration: settings.OneTimer ] ) }
-def RelayOff1() { return restPUT( "/zone/0", [ on: false ] ) }
-def RelayOn2() { return restPUT( "/zone/1", [ on: true, duration: settings.TwoTimer ] ) }
-def RelayOff2() { return restPUT( "/zone/1", [ on: false ] ) }
-def RelayOn3() { return restPUT( "/zone/2", [ on: true, duration: settings.ThreeTimer ] ) }
-def RelayOff3() { return restPUT( "/zone/2", [ on: false ] ) }
-def RelayOn4() { return restPUT( "/zone/3", [ on: true, duration: settings.FourTimer ] ) }
-def RelayOff4() { return restPUT( "/zone/3", [ on: false ] ) }
-def RelayOn5() { return restPUT( "/zone/4", [ on: true, duration: settings.FiveTimer ] ) }
-def RelayOff5() { return restPUT( "/zone/4", [ on: false ] ) }
-def RelayOn6() { return restPUT( "/zone/5", [ on: true, duration: settings.SixTimer ] ) }
-def RelayOff6() { return restPUT( "/zone/5", [ on: false ] ) }
-def RelayOn7() { return restPUT( "/zone/6", [ on: true, duration: settings.SevenTimer ] ) }
-def RelayOff7() { return restPUT( "/zone/6", [ on: false ] ) }
-def RelayOn8() { return restPUT( "/zone/7", [ on: true, duration: settings.EightTimer ] ) }
-def RelayOff8() { return restPUT( "/zone/7", [ on: false ] ) }
+def RelayOn1() { return RelayOn(1) }
+def RelayOff1() { return RelayOff(1) }
+def RelayOn2() { return RelayOn(2) }
+def RelayOff2() { return RelayOff(2) }
+def RelayOn3() { return RelayOn(3) }
+def RelayOff3() { return RelayOff(3) }
+def RelayOn4() { return RelayOn(4) }
+def RelayOff4() { return RelayOff(4) }
+def RelayOn5() { return RelayOn(5) }
+def RelayOff5() { return RelayOff(5) }
+def RelayOn6() { return RelayOn(6) }
+def RelayOff6() { return RelayOff(6) }
+def RelayOn7() { return RelayOn(7) }
+def RelayOff7() { return RelayOff(7) }
+def RelayOn8() { return RelayOn(8) }
+def RelayOff8() { return RelayOff(8) }
+
+def RelayOn(Integer zone) {
+    def name = NumeralToWord(zone)
+    def duration
+
+    try {
+        duration = settings["${zoneTimer}"].toInteger()
+    } catch( ClassCastException e ){
+        log.warn "Duration for ${zone} is not an integer '${duration}'"
+        return
+    }
+
+    return restPUT( "/zone/${zone}", [ on: true, duration: duration ] )
+}
+def RelayOff(Integer zone) {
+    return restPUT( "/zone/${zone}", [ on: false ] )
+}
 
 def rainDelayed() {
     log.info "rain delayed"
@@ -297,8 +314,8 @@ private restRequest( method, path, query ){
         method: method,
         path: path,
         headers: [
-            HOST: "${settings.confIpAddr}:${settings.confTcpPort}",
-            "Content-Type": contentType
+        HOST: "${settings.confIpAddr}:${settings.confTcpPort}",
+        "Content-Type": contentType
         ],
         query: query,
         body: body

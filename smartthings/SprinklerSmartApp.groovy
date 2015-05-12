@@ -259,11 +259,15 @@ def water() {
         def zoneTimes = []
         for(int z = 1; z <= theZoneCount; z++) {
             def zoneTime = settings["zone${z}"]
-            if(zoneTime) {
-            zoneTimes += "${z}:${zoneTime}"
-            log.info("Zone ${z} on for ${zoneTime} minutes")
+            if( zoneTime ) {
+                if( zoneTime.isNumber() ) {
+                    zoneTimes += "${z}:${zoneTime}"
+                    log.info("Zone ${z} on for ${zoneTime} minutes")
+                } else {
+                    log.warn("Zone ${z} duration is not a number: '${zoneTime}'")
+                }
+            }
         }
-    }
         switches.OnWithZoneTimes(zoneTimes.join(","))
     } else {
         log.debug("Turning all zones on")
