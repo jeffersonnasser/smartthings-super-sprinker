@@ -36,13 +36,16 @@ metadata {
     }
 
     preferences {
-        input("confIpAddr", "string", title:"Sprinkler IP Address", defaultValue:"192.168.1.210", required:true, displayDuringSetup: true )
-        input("confTcpPort", "number", title:"Sprinkler TCP Port", defaultValue:"80", required:true, displayDuringSetup: true )
-        input("zoneCount", "number", title:"Sprinkler Zones", defaultValue:"8", required:true, displayDuringSetup: true )
+        section("Sprinkler Network Address... ") {
+            input("confIpAddr", "string", title:"Sprinkler IP Address", defaultValue:"192.168.1.210", required:true, displayDuringSetup: true )
+            input("confTcpPort", "number", title:"Sprinkler TCP Port", defaultValue:"80", required:true, displayDuringSetup: true )
+        }
 
-        for (int i = 1; i <= theZoneCount; i++ ) {
-            def zone = NumeralToWord(i)
-            input("${zone}Timer", "number", title: "Zone ${zone}", description: "Zone ${zone} Time", required: false)
+        section("Zone Setup... ") {
+            for (int i = 1; i <= theZoneCount; i++ ) {
+                def zone = NumeralToWord(i)
+                input("${zone}Timer", "number", title: "Zone ${zone}", description: "Zone ${zone} Time", required: false)
+            }
         }
     }
 
