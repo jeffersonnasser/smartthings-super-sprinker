@@ -140,10 +140,10 @@ def on() {
 
     for (int i = 1; i <= 8; i++ ) {
         def zone = NumeralToWord(i)
-        def duration = settings["${zone}Timer"]
+        def duration
 
         try {
-            duration = duration.toInteger()
+            duration = settings["${zone}Timer"].toInteger()
         } catch(ClassCastException e) {
             log.warn "Duration for ${zone} is not an integer '${duration}'"
             continue
@@ -210,16 +210,18 @@ def RelayOn(Integer zone) {
     def duration
 
     try {
-        duration = settings["${zoneTimer}"].toInteger()
+        log.debug( "getting duration for ${name}Timer" )
+        duration = settings["${name}Timer"].toInteger()
     } catch( ClassCastException e ){
         log.warn "Duration for ${zone} is not an integer '${duration}'"
         return
     }
 
-    return restPUT( "/zone/${zone}", [ on: true, duration: duration ] )
+    return restPUT( "/zone/${zone - 1}", [ on: true, duration: duration ] )
 }
+
 def RelayOff(Integer zone) {
-    return restPUT( "/zone/${zone}", [ on: false ] )
+    return restPUT( "/zone/${zone - 1}", [ on: false ] )
 }
 
 def rainDelayed() {
