@@ -50,7 +50,14 @@ metadata {
     }
 
     tiles {
-        // TODO: define your main and details tiles here
+        // Information only icon for main screen
+        standardTile("statusTile", "device.switch", width: 1, height: 1, canChangeIcon: true, canChangeBackground: true) {
+            state "off", label: 'Start', icon: "st.Outdoor.outdoor12", backgroundColor: "#ffffff"
+            state "on", label: 'Running', icon: "st.Health & Wellness.health7", backgroundColor: "#53a7c0"
+            state "rainDelayed", label: 'Rain Delay', action: "switch.off", icon: "st.Weather.weather10", backgroundColor: "#fff000"
+        }
+
+        // Toggle for entire system
         standardTile("allZonesTile", "device.switch", width: 2, height: 2, canChangeIcon: true, canChangeBackground: true) {
             state "off", label: 'Start', action: "switch.on", icon: "st.Outdoor.outdoor12", backgroundColor: "#ffffff", nextState: "starting"
             state "on", label: 'Running', action: "switch.off", icon: "st.Health & Wellness.health7", backgroundColor: "#53a7c0", nextState: "stopping"
@@ -59,6 +66,7 @@ metadata {
             state "rainDelayed", label: 'Rain Delay', action: "switch.off", icon: "st.Weather.weather10", backgroundColor: "#fff000", nextState: "off"
         }
 
+        // Individual zone tiles
         for (int i = 1; i <= theZoneCount; i++ ) {
             def zone = NumeralToWord(i)
             standardTile("zone${zone}Tile", "device.zone${zone}", width: 1, height: 1, canChangeIcon: true, canChangeBackground: true) {
@@ -81,7 +89,7 @@ metadata {
             state "ok", label: "", action: "refresh", icon: "st.secondary.refresh", backgroundColor: "#ffffff"
         }
 
-        main "allZonesTile"
+        main "statusTile"
         details(["allZonesTile","zoneOneTile","zoneTwoTile","zoneThreeTile","zoneFourTile","zoneFiveTile","zoneSixTile","zoneSevenTile","zoneEightTile","scheduleEffect","refreshTile"])
     }
 }
