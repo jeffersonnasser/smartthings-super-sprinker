@@ -74,11 +74,13 @@ bool _zoneStatus( WebServer &server, uint8_t zone_id ) {
         return false;
     }
 
-    server << " \"zone\": " << zone.zone << ",";
-    server << " \"on\": " << ( zone.on ? "true" : "false" ) << ",";
-    server << " \"queued\": " << ( zone.queued ? "true" : "false" ) << ",";
-    server << " \"duration\": " << zone.duration << ",";
-    server << " \"secs_left\": " << zone.secs_left;
+    server << F( " \"zone\": " ) << zone.zone << F( "," );
+    server << F( " \"on\": " ) << ( zone.on ? F( "true" ) : F( "false" ) ) <<
+           F( "," );
+    server << F( " \"queued\": " ) << ( zone.queued ? F( "true" ) : F( "false" ) )
+           << F( "," );
+    server << F( " \"duration\": " ) << zone.duration << F( "," );
+    server << F( " \"secs_left\": " ) << zone.secs_left;
     server << F( "}" );
 
     return true;
@@ -87,10 +89,10 @@ bool _zoneStatus( WebServer &server, uint8_t zone_id ) {
 void zoneStatus( WebServer &server, uint8_t zone_id ) {
     server << F( "{ \"zones\": [ " );
     if( _zoneStatus( server, zone_id ) ) {
-        server << " ],\n" << _okMsg() << ", ";
+        server << F( " ],\n" ) << _okMsg() << F( ", " );
         server << F( "\"message\":\"status returned ok\"\n" );
     } else {
-        server << " ],\n" << _errMsg() << ", ";
+        server << F( " ],\n" ) << _errMsg() << F( ", " );
         server << F( "\"message\":\"error returned by zone.status()\"\n" );
     }
     server << F( " }\n" );
@@ -99,28 +101,27 @@ void zoneStatus( WebServer &server, uint8_t zone_id ) {
 bool _zonesStatus( WebServer &server ) {
     bool ok = true;
 
-    server << " \"zones\": [\n";
+    server << F( " \"zones\": [\n" );
     for( uint8_t i = 0; i < ZONE_COUNT; i++ ) {
         if( _zoneStatus( server, i ) ) ok = false;
         if( i < ZONE_COUNT - 1 ) server << F( ",\n" );
     }
-    server << "],\n";
+    server << F( "],\n" );
 
     return ok;
 }
 
 void zonesStatus( WebServer &server ) {
-    server << "{\n";
+    server << F( "{\n" );
     if( !_zonesStatus( server ) ) {
-        server << _okMsg() << ", ";
+        server << _okMsg() << F( ", " );
         server << F( "\"message\": \"statuses returned ok\"\n" );
     } else {
-        server << _errMsg() << ",\n";
+        server << _errMsg() << F( ",\n" );
         server << F( "\"message\": \"an error returned by on of the zone.status()\n" );
     }
-    server << " }\n";
+    server << F( " }\n" );
 }
-
 
 void zoneUpdate( WebServer &server, uint8_t zone_id ) {
     char name[PARAM_SIZE], value[VALUE_SIZE];
@@ -141,42 +142,42 @@ void zoneUpdate( WebServer &server, uint8_t zone_id ) {
         }
         // Serial << name << " = " << value << "\r\n";
         Serial.print( name );
-        Serial.print( " = " );
+        Serial.print( F( " = " ) );
         Serial.println( value );
     }
 
     if( ! ( on || off ) ) {
         server.httpSuccess( "application/json" );
-        server << " {" << _errMsg() << ", ";
+        server << F( " {" ) << _errMsg() << F( ", " );
         server << F( "\"message\": \"on must be set to true or false\" }\n" );
         return;
     }
     if( zone < 0 ) zone = zone_id;
     if( zone != zone_id ) {
         server.httpSuccess( "application/json" );
-        server << "{" << _errMsg() << ", ";
+        server << F( "{" ) << _errMsg() << F( ", " );
         server << F( "\"message\": \"zone in URL and param differ\" }\n" );
         return;
     }
     if( zone < 0 || zone >= ZONE_COUNT ) {
         server.httpSuccess( "application/json" );
-        server << "{" << _errMsg() << ", ";
+        server << F( "{" ) << _errMsg() << F( ", " );
         server << F( "\"message\": \"zone out of range\" }\n" );
         return;
     }
     if( on && duration > 0 ) {
         if( sprinkler.on( zone, duration ) ) {
             server.httpSuccess( "application/json" );
-            server << "{\n";
+            server << F( "{\n" );
             _zonesStatus( server ); // Check return value?
             server << _okMsg() << ", ";
-            server << " \"message\": "
-                   << "\"zone " << zone << " queued for " << duration
-                   << "\" }\n";
+            server << F( " \"message\": " )
+                   << F( "\"zone " ) << zone << F( " queued for " ) << duration
+                   << F( "\" }\n" );
             return;
         } else {
             server.httpSuccess( "application/json" );
-            server << "{" << _errMsg() << ", ";
+            server << F( "{" ) << _errMsg() << F( ", " );
             server << F( "\"message\": \"error running sprinkler.on()\" }\n" );
             return;
         }
@@ -185,14 +186,14 @@ void zoneUpdate( WebServer &server, uint8_t zone_id ) {
         if( sprinkler.off( zone ) ) {
             // server.httpSeeOther(PREFIX "/form");
             server.httpSuccess( "application/json" );
-            server << "{\n";
+            server << F( "{\n" );
             _zonesStatus( server ); // Check return value?
-            server << _okMsg() << ", ";
+            server << _okMsg() << F( ", " );
             server << F( "\"message\": \"zone turned off\" }\n" );
             return;
         } else {
             server.httpSuccess( "application/json" );
-            server << "{" << _errMsg() << ", ";
+            server << F( "{" ) << _errMsg() << F( ", " );
             server << F( "\"message\": \"error running sprinkler.off()\" }\n" );
             return;
         }
@@ -205,7 +206,7 @@ void zoneUpdate( WebServer &server, uint8_t zone_id ) {
 void do_advance( WebServer &server ) {
     sprinkler.advance();
     server.httpSuccess( "application/json" );
-    server << "{" << _okMsg() << ", ";
+    server << F( "{" ) << _okMsg() << F( ", " );
     server << F( "\"message\": \"sprinkler advanced\" }\n" );
     return;
 }
@@ -215,26 +216,26 @@ void do_multi_zone_on(  WebServer &server, uint8_t *zone, uint8_t zone_cnt,
 
     if( zone_cnt == 0 ) {
         server.httpSuccess( "application/json" );
-        server << "{" << _errMsg() << ", ";
+        server << F( "{" ) << _errMsg() << F( ", " );
         server << F( "\"message\": \"need to pass the zones to turn on in zone[]\" }\n" );
         return;
     }
     if( zone_cnt != duration_cnt ) {
         server.httpSuccess( "application/json" );
-        server << "{" << _errMsg() << ", ";
+        server << F( "{" ) << _errMsg() << F( ", " );
         server << F( "\"message\": \"need to pass the durations for each zone in duration[]\" }\n" );
         return;
     }
     for( uint8_t i = 0; i < zone_cnt; i++ ) {
         if( zone[i] < 0 || zone[i] >= ZONE_COUNT ) {
             server.httpSuccess( "application/json" );
-            server << "{" << _errMsg() << ", ";
+            server << F( "{" ) << _errMsg() << F( ", " );
             server << F( "\"message\": \"zone in zone[] out of range\" }\n" );
             return;
         }
         if( duration[i] < 0 || duration[i] > MAX_DURATION ) {
             server.httpSuccess( "application/json" );
-            server << "{" << _errMsg() << ", ";
+            server << F( "{" ) << _errMsg() << F( ", " );
             server << F( "\"message\": \"duration out of range\" }\n" );
             return;
         }
@@ -242,9 +243,9 @@ void do_multi_zone_on(  WebServer &server, uint8_t *zone, uint8_t zone_cnt,
     }
     server.httpSuccess( "application/json" );
 
-    server << "{\n";
+    server << F( "{\n" );
     _zonesStatus( server ); // Check return value?
-    server << _okMsg() << ", ";
+    server << _okMsg() << F( ", " );
     server << F( "\"message\": \"zones successfully scheduled\" " );
     server << F( " }\n" );
     return;
@@ -255,9 +256,9 @@ void do_multi_zone_off( WebServer &server, uint8_t *zone, uint8_t zone_cnt ) {
     if( zone_cnt == 0 ) {
         sprinkler.allOff();
         server.httpSuccess( "application/json" );
-        server << "{\n";
+        server << F( "{\n" );
         _zonesStatus( server ); // Check return value?
-        server << _okMsg() << ", ";
+        server << _okMsg() << F( ", " );
         server << F( "\"message\": \"all zones turned off\" \n" );
         server << F( " }\n" );
         return;
@@ -266,9 +267,9 @@ void do_multi_zone_off( WebServer &server, uint8_t *zone, uint8_t zone_cnt ) {
             sprinkler.off( zone[i] );
 
         server.httpSuccess( "application/json" );
-        server << "{\n";
+        server << F( "{\n" );
         _zonesStatus( server ); // Check return value?
-        server << _okMsg() << ", ";
+        server << _okMsg() << F( ", " );
         server << F( "\"message\": \"zones turned off\" \n" );
         server << F( " }\n" );
         return;
@@ -327,14 +328,14 @@ void zonesUpdate( WebServer & server ) {
         // Stop processing if too many
         if( zone_cnt > ZONE_COUNT || duration_cnt > ZONE_COUNT ) {
             server.httpSuccess( "application/json" );
-            server << "{" << _errMsg() << ", ";
+            server << F( "{" ) << _errMsg() << F( ", " );
             server << F( "\"message\": \"too many zone[] or duration[] entries\" }\n" );
             return;
         }
 
         // Serial << name << " = " << value << "\r\n";
         Serial.print( name );
-        Serial.print( " = " );
+        Serial.print( F( " = " ) );
         Serial.println( value );
     }
 
@@ -344,7 +345,7 @@ void zonesUpdate( WebServer & server ) {
     else if( off ) return do_multi_zone_off( server, zone, zone_cnt );
 
     server.httpSuccess( "application/json" );
-    server << "{" << _errMsg() << ", ";
+    server << F( "{" ) << _errMsg() << F( ", " );
     server << F( "\"message\": \"on needs to be set to true or false\" }\n" );
     return;
 }
@@ -396,14 +397,13 @@ void zonesCmd( WebServer & server, WebServer::ConnectionType type,
 
 void debugCmd( WebServer & server, WebServer::ConnectionType type,
                char *url_tail, bool tail_complete ) {
-    P( htmlHead ) =
-        "<html><head>\n"
-        "<title>Arduino Sprinkler Server</title>\n"
-        "</head>"
-        "<body>";
 
     server.httpSuccess();
-    server.printP( htmlHead );
+    server << F(
+               "<html><head>\n"
+               "<title>Arduino Sprinkler Server</title>\n"
+               "</head>"
+               "<body>" );
 
     server << F( "<h1>Digital Pins</h1><p>\n" );
 
@@ -411,9 +411,9 @@ void debugCmd( WebServer & server, WebServer::ConnectionType type,
     for ( uint8_t i = 2; i < 10; ++i ) {
         if( i == 4 ) continue;
         uint8_t val = digitalRead( i );
-        server << "Digital " << i << ": ";
-        server << ( val ? "HIGH" : "LOW" );
-        server << "<br/>\n";
+        server << F( "Digital " ) << i << F( ": " );
+        server << ( val ? F( "HIGH" ) : F( "LOW" ) );
+        server << F( "<br/>\n" );
     }
 
     server << F( "</body></html>" );
@@ -421,15 +421,14 @@ void debugCmd( WebServer & server, WebServer::ConnectionType type,
 
 void defaultCmd( WebServer & server, WebServer::ConnectionType type,
                  char *url_tail, bool tail_complete ) {
-    P( htmlHead ) =
+
+    server.httpSuccess();
+    server << F(
         "<html>"
         "<head>"
         "<title>Arduino Sprinkler System</title>"
         "</head>"
-        "<body>";
-
-    server.httpSuccess();
-    server.printP( htmlHead );
+        "<body>" );
     server << F( "Welcome" );
     server << F( "</body></html>" );
 }
@@ -440,7 +439,7 @@ void do_sprinkler_update( void ) {
 
 void setup() {
     Serial.begin( 9600 );
-    Serial.println( "beginning setup" );
+    Serial.println( F( "beginning setup" ) );
 
     Ethernet.begin( mac, ip );
     webserver.begin();
@@ -451,7 +450,7 @@ void setup() {
     webserver.setUrlPathCommand( &zoneCmd );
 
     t.every( TIMER_PERIOD, do_sprinkler_update );
-    Serial.println( "completed setup" );
+    Serial.println( F( "completed setup" ) );
 }
 
 void loop() {
