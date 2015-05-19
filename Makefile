@@ -22,6 +22,9 @@ RUNTEST := $(if $(COMSPEC), runtest.exe, runtest)
 
 all: runtests
 
+test: runtests
+	prove -v ./runtests
+
 .build/%.o: %.cpp
 	mkdir -p .deps/$(dir $<)
 	mkdir -p .build/$(dir $<)
