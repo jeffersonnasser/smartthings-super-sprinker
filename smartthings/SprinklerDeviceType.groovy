@@ -54,7 +54,7 @@ metadata {
         standardTile("statusTile", "device.switch", width: 1, height: 1, canChangeIcon: true, canChangeBackground: true) {
             state "off", label: 'Start', icon: "st.Outdoor.outdoor12", backgroundColor: "#ffffff"
             state "on", label: 'Running', icon: "st.Health & Wellness.health7", backgroundColor: "#53a7c0"
-            state "rainDelayed", label: 'Rain Delay', action: "switch.off", icon: "st.Weather.weather10", backgroundColor: "#fff000"
+            state "rainDelayed", label: 'Rain Delay', icon: "st.Weather.weather10", backgroundColor: "#fff000"
         }
 
         // Toggle for entire system
@@ -235,13 +235,6 @@ def RelayOff(Integer zone) {
     return restPUT( "/zone/${zone - 1}", [ on: false ] )
 }
 
-def rainDelayed() {
-    log.info "rain delayed"
-    if(device.currentValue("switch") != "on") {
-        sendEvent(name:"switch", value:"rainDelayed", displayed: true)
-    }
-}
-
 def refresh() {
     TRACE( "Executing 'refresh()'" )
     return update()
@@ -250,6 +243,13 @@ def refresh() {
 def poll() {
     TRACE( "Executing 'poll()'" )
     return update()
+}
+
+def rainDelayed() {
+    log.info "rain delayed"
+    if(device.currentValue("switch") != "on") {
+        sendEvent(name:"switch", value:"rainDelayed", displayed: true)
+    }
 }
 
 // commands that over-ride the SmartApp ----------------------------------------------------
