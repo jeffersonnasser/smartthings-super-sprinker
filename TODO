@@ -1,7 +1,7 @@
 Arduino - Sprinkler
 * Specify switch HIGH/LOW activation as a constriction argument
 * Allow selection between multiple switch boards via another pin
-* Support shift registers (ie, 74HC595) for more zones
+* Support shift registers (ie, 74HC595) for more zones (ic2)
 
 Arduino - SprinklerREST
 * Add support for event subscriptions
