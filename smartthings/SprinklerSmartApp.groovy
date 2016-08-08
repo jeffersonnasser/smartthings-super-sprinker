@@ -222,13 +222,23 @@ def safeToFloat(value) {
     return 0.0
 }
 
+def retrieveWeather( feature, zipcode ){
+    def weather = getWeatherFeature(feature, zipcode)
+    log.debug( "weather: ${weather}" )
+    if( weather.containsKey("response") && weather.response.containsKey("error") ){
+      log.warn( "unable to request ${feature} weather: ${weather}" )
+      return false
+    }
+    return weather
+}
+
 def wasWetYesterday() {
     if (!zipcode) return false
 
-    def yesterdaysWeather = getWeatherFeature("yesterday", zipcode)
-    log.debug( "yesterdaysWeather: ${yesterdaysWeather}" )
-    def yesterdaysDailySummaries=yesterdaysWeather.history.dailysummary.toArray()
-    def yesterdaysInches=safeToFloat(yesterdaysSummaries[0].precipi)
+    def yesterdaysWeather = retrieveWeather("yesterday", zipcode)
+    if( ! yesterdaysWeather ) return false
+    def yesterdaysPrecip=yesterdaysWeather.history.dailysummary.precipi.toArray()
+    def yesterdaysInches=safeToFloat(yesterdaysPrecip[0])
     log.info("Checking yesterday's percipitation for $zipcode: $yesterdaysInches in")
     return yesterdaysInches
 }
@@ -237,7 +247,8 @@ def wasWetYesterday() {
 def isWet() {
     if (!zipcode) return false
 
-    def todaysWeather = getWeatherFeature("conditions", zipcode)
+    def todaysWeather = retrieveWeather("conditions", zipcode)
+    if( ! todaysWeather ) return false
     def todaysInches = safeToFloat(todaysWeather.current_observation.precip_today_in)
     log.info("Checking today's percipitation for $zipcode: $todaysInches in")
     return todaysInches
@@ -246,7 +257,8 @@ def isWet() {
 def isStormy() {
     if (!zipcode) return false
 
-    def forecastWeather = getWeatherFeature("forecast", zipcode)
+    def forecastWeather = retrieveWeather("forecast", zipcode)
+    if( ! forecastWeather ) return false
     def forecastPrecip=forecastWeather.forecast.simpleforecast.forecastday.qpf_allday.in.toArray()
     def forecastInches=forecastPrecip[0]
     log.info("Checking forecast percipitation for $zipcode: $forecastInches in")
