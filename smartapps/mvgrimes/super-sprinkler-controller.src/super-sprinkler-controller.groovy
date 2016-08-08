@@ -1,1 +1,1 @@
-smartthings/SprinklerSmartApp.groovy
+../../../smartthings/SprinklerSmartApp.groovy

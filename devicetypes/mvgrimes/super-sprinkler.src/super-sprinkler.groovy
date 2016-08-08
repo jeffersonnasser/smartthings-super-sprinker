@@ -1,1 +1,1 @@
-smartthings/SprinklerDeviceType.groovy
+../../../smartthings/SprinklerDeviceType.groovy
