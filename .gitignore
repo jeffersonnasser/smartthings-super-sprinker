@@ -3,3 +3,6 @@ runtests
 .deps/
 .build_ano/
 tmp/
+.DS_Store
+*.swp
+Session.vim

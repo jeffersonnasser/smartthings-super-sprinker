@@ -15,6 +15,7 @@
  */
 
 metadata {
+    // TODO: allow the user to modify this with dynamic pages
     def theZoneCount = 8;
 
     definition (name: "Super Sprinkler", namespace: "mvgrimes", author: "mgrimes@cpan.org") {

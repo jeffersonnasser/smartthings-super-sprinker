@@ -28,7 +28,6 @@ definition(
     namespace: "mvgrimes",
     author: "mgrimes@cpan.org",
     description: "Schedule sprinklers to run unless there is rain.",
-    category: "Green Living",
     version: "3",
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/water_moisture.png",
     iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/water_moisture@2x.png"
@@ -37,7 +36,7 @@ definition(
 preferences {
     page(name: "schedulePage", title: "Schedule", nextPage: "sprinklerPage", uninstall: true) {
         section("App configruation...") {
-            label title: "Choose an title for App", required: true, defaultValue: "Irrigation Scheduler"
+            label name: "label", title: "Choose an title for App", required: true, defaultValue: "Super Sprinkler Controller"
         }
         section {
             input (
@@ -60,8 +59,8 @@ preferences {
         }
     }
 
-    page(name: "sprinklerPage", title: "Sprinkler Controller Setup", install: true) {
-        section("Sprinkler switches...") {
+    page(name: "sprinklerPage", title: "Sprinkler Controller Setup", nextPage: "virtualRainGuage", uninstall: true) {
+        section("Sprinkler switch...") {
             input "switches", "capability.switch", multiple: false
         }
         section("Zone Times...") {
@@ -70,9 +69,9 @@ preferences {
             }
         }
 
- // }
+     }
 
-//  page (name: "virtualRainGuage", title: "Virtual Rain Guage Setup", install: true) {
+     page (name: "virtualRainGuage", title: "Virtual Rain Guage Setup", install: true) {
 
         section("Zip code to check weather...") {
             input "zipcode", "text", title: "Zipcode?", required: false
@@ -227,8 +226,9 @@ def wasWetYesterday() {
     if (!zipcode) return false
 
     def yesterdaysWeather = getWeatherFeature("yesterday", zipcode)
-    def yesterdaysPrecip=yesterdaysWeather.history.dailysummary.precipi.toArray()
-    def yesterdaysInches=safeToFloat(yesterdaysPrecip[0])
+    log.debug( "yesterdaysWeather: ${yesterdaysWeather}" )
+    def yesterdaysDailySummaries=yesterdaysWeather.history.dailysummary.toArray()
+    def yesterdaysInches=safeToFloat(yesterdaysSummaries[0].precipi)
     log.info("Checking yesterday's percipitation for $zipcode: $yesterdaysInches in")
     return yesterdaysInches
 }
