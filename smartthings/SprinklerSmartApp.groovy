@@ -1,13 +1,14 @@
 /**
 *
+*  Super Sprinkler Controller
 *
+*  Copyright Mark Grimes
+*
+*  Base on the excellent work of:
 *  Irrigation Scheduler SmartApp Smarter Lawn Controller
-*  Compatible with up to arbitray number of Zones
-*
+*  Compatible with an arbitray number of Zones
 *  Author: Stan Dotson (stan@dotson.info) and Matthew Nichols (matt@nichols.name)
 *  Date: 2014-06-16
-*
-*  Copyright 2014 Stan Dotson and Matthew Nichols
 *
 *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
 *  in compliance with the License. You may obtain a copy of the License at:
@@ -18,18 +19,17 @@
 *  on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License
 *  for the specific language governing permissions and limitations under the License.
 *
-*
 **/
 
 def theZoneCount = 8;
 
 definition(
-    name: "Irrigation Scheduler v2.*",
-    namespace: "d8adrvn/smart_sprinkler",
-    author: "matt@nichols.name and stan@dotson.info",
+    name: "Super Sprinkler Controller",
+    namespace: "mvgrimes",
+    author: "mgrimes@cpan.org",
     description: "Schedule sprinklers to run unless there is rain.",
     category: "Green Living",
-    version: "2.*",
+    version: "3",
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/water_moisture.png",
     iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/water_moisture@2x.png"
 )

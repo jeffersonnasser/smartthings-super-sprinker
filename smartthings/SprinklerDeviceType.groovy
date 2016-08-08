@@ -1,7 +1,7 @@
 /**
- *  Smart Sprinkler
+ *  Super Sprinkler
  *
- *  Copyright 2015 Mark Grimes
+ *  Copyright Mark Grimes
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  *  in compliance with the License. You may obtain a copy of the License at:
@@ -17,7 +17,7 @@
 metadata {
     def theZoneCount = 8;
 
-    definition (name: "Sprinkler Controller", namespace: "mvgrimes", author: "Mark Grimes") {
+    definition (name: "Super Sprinkler", namespace: "mvgrimes", author: "mgrimes@cpan.org") {
         capability "Switch"  // on, off
         capability "Refresh" // refresh
         capability "Polling" // poll

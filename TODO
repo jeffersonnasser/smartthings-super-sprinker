@@ -1,3 +1,11 @@
+Project:
+* Use SmartThings github integration:
+  - Restructure repo (done)
+  - Propigate repo structure to topic/subcribe branch
+  - Create github repo
+      hub create -d <description> smarthings-super-sprinkler
+  - Subscribe to repo in ST ide and update devices/smartapps
+
 Arduino - Sprinkler
 * Specify switch HIGH/LOW activation as a constriction argument
 * Allow selection between multiple switch boards via another pin

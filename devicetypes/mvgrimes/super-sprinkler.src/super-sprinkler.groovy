@@ -1,0 +1,1 @@
+smartthings/SprinklerDeviceType.groovy
