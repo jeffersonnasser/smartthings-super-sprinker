@@ -233,10 +233,10 @@ def retrieveWeather( feature, zipcode ){
 }
 
 def wasWetYesterday() {
-    if (!zipcode) return false
+    if (!zipcode) return 0.0
 
     def yesterdaysWeather = retrieveWeather("yesterday", zipcode)
-    if( ! yesterdaysWeather ) return false
+    if( ! yesterdaysWeather ) return 0.0
     def yesterdaysPrecip=yesterdaysWeather.history.dailysummary.precipi.toArray()
     def yesterdaysInches=safeToFloat(yesterdaysPrecip[0])
     log.info("Checking yesterday's percipitation for $zipcode: $yesterdaysInches in")
@@ -245,20 +245,20 @@ def wasWetYesterday() {
 
 
 def isWet() {
-    if (!zipcode) return false
+    if (!zipcode) return 0.0
 
     def todaysWeather = retrieveWeather("conditions", zipcode)
-    if( ! todaysWeather ) return false
+    if( ! todaysWeather ) return 0.0
     def todaysInches = safeToFloat(todaysWeather.current_observation.precip_today_in)
     log.info("Checking today's percipitation for $zipcode: $todaysInches in")
     return todaysInches
 }
 
 def isStormy() {
-    if (!zipcode) return false
+    if (!zipcode) return 0.0
 
     def forecastWeather = retrieveWeather("forecast", zipcode)
-    if( ! forecastWeather ) return false
+    if( ! forecastWeather ) return 0.0
     def forecastPrecip=forecastWeather.forecast.simpleforecast.forecastday.qpf_allday.in.toArray()
     def forecastInches=forecastPrecip[0]
     log.info("Checking forecast percipitation for $zipcode: $forecastInches in")
