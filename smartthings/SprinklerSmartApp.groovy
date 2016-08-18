@@ -224,7 +224,7 @@ def safeToFloat(value) {
 
 def retrieveWeather( feature, zipcode ){
     def weather = getWeatherFeature(feature, zipcode)
-    log.debug( "weather: ${weather}" )
+    log.debug( "weather for ${feature}: ${weather}" )
     if( weather.containsKey("response") && weather.response.containsKey("error") ){
       log.warn( "unable to request ${feature} weather: ${weather}" )
       return false
@@ -289,7 +289,7 @@ def water() {
 
 def anyZoneTimes() {
     for(int i = 1; i <= theZoneCount; i++) {
-        def duration = settings["zone${z}"]
+        def duration = settings["zone${i}"]
 
         try {
             duration = duration.toInteger()
