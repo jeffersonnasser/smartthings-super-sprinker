@@ -266,6 +266,7 @@ def isStormy() {
 }
 
 def water() {
+    log.debug( "water() called" )
     state.triggered = true
     if(anyZoneTimes()) {
         def zoneTimes = []
@@ -288,8 +289,7 @@ def water() {
 }
 
 def anyZoneTimes() {
-  log.debug("settings are :")
-  log.deubg(settings)
+    log.debug("settings are ${settings}")
     for(int i = 1; i <= theZoneCount; i++) {
         def duration = settings["zone${i}"]
         log.debug("zone${i} has duration of ${duration}")
