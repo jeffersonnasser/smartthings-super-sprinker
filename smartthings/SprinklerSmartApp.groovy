@@ -311,15 +311,7 @@ def anyZoneTimes() {
     for(int i = 1; i <= settings.theZoneCount; i++) {
         def duration = settings["zone${i}"]
         log.debug("zone${i} has duration of ${duration}")
-
-        try {
-            duration = duration.toInteger()
-        } catch(ClassCastException e) {
-            log.warn "Duration for ${zone} is not an integer '${duration}'"
-            continue
-        }
-
-        if( duration > 0 ) return true
+        if( duration?.isNumber() && duration > 0 ) return true
     }
     return false;
 }
