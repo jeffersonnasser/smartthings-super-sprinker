@@ -288,8 +288,11 @@ def water() {
 }
 
 def anyZoneTimes() {
+  log.debug("settings are :")
+  log.deubg(settings)
     for(int i = 1; i <= theZoneCount; i++) {
         def duration = settings["zone${i}"]
+        log.debug("zone${i} has duration of ${duration}")
 
         try {
             duration = duration.toInteger()
