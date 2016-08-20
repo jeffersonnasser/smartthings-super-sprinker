@@ -93,12 +93,18 @@ preferences {
 def installed() {
     scheduling()
     state.daysSinceLastWatering = [0,0,0]
+    state.theZoneCount = theZoneCount
+    log.debug("installed: theZoneCount = ${theZoneCount}")
+    log.debug("installed: state.theZoneCount = ${state.theZoneCount}")
 }
 
 def updated() {
     unschedule()
     scheduling()
     state.daysSinceLastWatering = [0,0,0]
+    state.theZoneCount = theZoneCount
+    log.debug("updated: theZoneCount = ${theZoneCount}")
+    log.debug("updated: state.theZoneCount = ${state.theZoneCount}")
 }
 
 // Scheduling
@@ -267,10 +273,12 @@ def isStormy() {
 
 def water() {
     log.debug( "water() called" )
+    log.debug("theZoneCount is ${theZoneCount}")
+    log.debug("state.theZoneCount is ${state.theZoneCount}")
     state.triggered = true
     if(anyZoneTimes()) {
         def zoneTimes = []
-        for(int z = 1; z <= theZoneCount; z++) {
+        for(int z = 1; z <= state.theZoneCount; z++) {
             def zoneTime = settings["zone${z}"]
             if( zoneTime ) {
                 if( zoneTime.isNumber() ) {
@@ -290,7 +298,9 @@ def water() {
 
 def anyZoneTimes() {
     log.debug("settings are ${settings}")
-    for(int i = 1; i <= theZoneCount; i++) {
+    log.debug("theZoneCount is ${theZoneCount}")
+    log.debug("state.theZoneCount is ${state.theZoneCount}")
+    for(int i = 1; i <= state.theZoneCount; i++) {
         def duration = settings["zone${i}"]
         log.debug("zone${i} has duration of ${duration}")
 
