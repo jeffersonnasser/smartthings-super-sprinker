@@ -21,8 +21,6 @@
 *
 **/
 
-def theZoneCount = 8;
-
 definition(
     name: "Super Sprinkler Controller",
     namespace: "mvgrimes",
@@ -57,21 +55,24 @@ preferences {
             input name: "waterTimeTwo",  type: "time", required: false, title: "and again at..."
             input name: "waterTimeThree",  type: "time", required: false, title: "and again at..."
         }
-    }
 
-    page(name: "sprinklerPage", title: "Sprinkler Controller Setup", nextPage: "virtualRainGuage", uninstall: true) {
+        section("Water every...") {
+            input "days", "number", title: "Days?", description: "minimum # days between watering", required: false
+        }
+
         section("Sprinkler switch...") {
             input "switches", "capability.switch", multiple: false
         }
-        section("Zone Times...") {
-            for (int i = 1; i <= theZoneCount; i++ ) {
-                input "zone${i}", "number", title: "Zone ${i} Time", description: "minutes", multiple: false, required: false
-            }
+
+        section("Sprinkler zones...") {
+            input "theZoneCount", "number", title: "Zones?", description: "how many zones on your sprinkler?", defaultValue: 8, required: false
         }
+    }
 
-     }
+    // Include dyanmic page
+    page(name: "sprinklerPage", title: "Sprinkler Controller Setup", nextPage: "virtualRainGuage", uninstall: true)
 
-     page (name: "virtualRainGuage", title: "Virtual Rain Guage Setup", install: true) {
+    page (name: "virtualRainGuage", title: "Virtual Rain Guage Setup", install: true) {
 
         section("Zip code to check weather...") {
             input "zipcode", "text", title: "Zipcode?", required: false
@@ -90,21 +91,29 @@ preferences {
     }
 }
 
+def sprinklerPage(){
+  dynamicPage(name: "sprinklerPage", install: false, uninstall: true) {
+        section("Zone Times...") {
+            for (int i = 1; i <= settings.theZoneCount; i++ ) {
+                input "zone${i}", "number", title: "Zone ${i} Time", description: "minutes", multiple: false, required: false
+            }
+        }
+
+     }
+
 def installed() {
     scheduling()
     state.daysSinceLastWatering = [0,0,0]
-    state.theZoneCount = theZoneCount
-    log.debug("installed: theZoneCount = ${theZoneCount}")
-    log.debug("installed: state.theZoneCount = ${state.theZoneCount}")
+    settings.theZoneCount = settings.theZoneCount ?: 8;
+    log.debug("installed: settings.theZoneCount = ${settings.theZoneCount}")
 }
 
 def updated() {
     unschedule()
     scheduling()
     state.daysSinceLastWatering = [0,0,0]
-    state.theZoneCount = theZoneCount
-    log.debug("updated: theZoneCount = ${theZoneCount}")
-    log.debug("updated: state.theZoneCount = ${state.theZoneCount}")
+    settings.theZoneCount = settings.theZoneCount ?: 8;
+    log.debug("updated: settings.theZoneCount = ${settings.theZoneCount}")
 }
 
 // Scheduling
@@ -273,12 +282,11 @@ def isStormy() {
 
 def water() {
     log.debug( "water() called" )
-    log.debug("theZoneCount is ${theZoneCount}")
-    log.debug("state.theZoneCount is ${state.theZoneCount}")
+    log.debug("settings.theZoneCount is ${settings.theZoneCount}")
     state.triggered = true
     if(anyZoneTimes()) {
         def zoneTimes = []
-        for(int z = 1; z <= state.theZoneCount; z++) {
+        for(int z = 1; z <= settings.theZoneCount; z++) {
             def zoneTime = settings["zone${z}"]
             if( zoneTime ) {
                 if( zoneTime.isNumber() ) {
@@ -298,9 +306,8 @@ def water() {
 
 def anyZoneTimes() {
     log.debug("settings are ${settings}")
-    log.debug("theZoneCount is ${theZoneCount}")
-    log.debug("state.theZoneCount is ${state.theZoneCount}")
-    for(int i = 1; i <= state.theZoneCount; i++) {
+    log.debug("settings.theZoneCount is ${settings.theZoneCount}")
+    for(int i = 1; i <= settings.theZoneCount; i++) {
         def duration = settings["zone${i}"]
         log.debug("zone${i} has duration of ${duration}")
 
