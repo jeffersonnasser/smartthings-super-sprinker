@@ -100,6 +100,7 @@ def sprinklerPage(){
         }
 
      }
+}
 
 def installed() {
     scheduling()
